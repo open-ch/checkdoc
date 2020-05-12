@@ -1,13 +1,14 @@
-package pkg
+package checkdoc
 
 import (
 	"fmt"
-	"osag/libs/fsutils"
-	"osag/libs/mdutils"
 	"path/filepath"
 	"strings"
 
-	"gopkg.in/russross/blackfriday.v2"
+	"github.com/open-ch/go-libs/fsutils"
+	"github.com/open-ch/go-libs/mdutils"
+
+	blackfriday "github.com/russross/blackfriday/v2"
 )
 
 // parsedAST is a tuple of an absolute path to a markdown file, and its parsed abstract syntax tree (AST).
@@ -92,7 +93,7 @@ func BuildLinkGraphNodes(treeRoot string, baseNames []string, fileExtensions []s
 
 func keepLinksAsStrings(linkDatas []blackfriday.LinkData) []string {
 	var toRet []string
-	for _, linkData := range (linkDatas) {
+	for _, linkData := range linkDatas {
 		// TODO handle links that contain an anchor -> they would break the current logic.
 		//  instead of removing the anchor, we will probably want to do some additional validation,
 		//  ie, does an anchor exist in the destination file.

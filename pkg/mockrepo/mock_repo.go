@@ -3,7 +3,8 @@ package mockrepo
 import (
 	"io/ioutil"
 	"os"
-	"osag/libs/untar"
+
+	"github.com/open-ch/go-libs/untar"
 )
 
 // Some functions to provide a mock test environment to the checking logic.
@@ -14,7 +15,8 @@ func MockRepo() string {
 	tempDir, _ := ioutil.TempDir("", "mock-repo-*")
 	// This method will be called from places that have imported this package as a dependency:
 	// in Bazel, it means that its content will be present in a directory with the same name.
-	f, _ := os.Open("./mockrepo/test-data.tar.gz")
+	// This is ugly as hell and will probably break outside of Bazel
+	f, _ := os.Open("../mockrepo/test-data.tar.gz")
 	untar.Untar(f, tempDir)
 	f.Close()
 	return tempDir

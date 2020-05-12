@@ -1,7 +1,7 @@
 package main
 
 import (
-	"osag/tools/checkdoc/cmd"
+	"github.com/open-ch/checkdoc/cmd"
 )
 
 func main() {

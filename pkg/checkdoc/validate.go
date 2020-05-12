@@ -1,9 +1,10 @@
-package pkg
+package checkdoc
 
 import (
 	"os"
-	"osag/libs/logger"
 	"path/filepath"
+
+	"github.com/open-ch/go-libs/logger"
 )
 
 // NodeReport contains some information about the quality of a node

@@ -3,9 +3,11 @@ package cmd
 import (
 	"fmt"
 	"os"
-	checkdock "osag/tools/checkdock/pkg"
-	"osag/libs/fsutils"
 	"path/filepath"
+
+	"github.com/open-ch/go-libs/fsutils"
+
+	"github.com/open-ch/checkdoc/pkg/checkdoc"
 
 	"github.com/spf13/cobra"
 )
@@ -50,7 +52,7 @@ func runVerify() error {
 
 func verifyTree(treeRoot string) error {
 	logger.Infof("Considering basenames %v and extensions %v", baseNames, extensions)
-	nodes, err := checkdock.BuildLinkGraphNodes(treeRoot, baseNames, extensions)
+	nodes, err := checkdoc.BuildLinkGraphNodes(treeRoot, baseNames, extensions)
 
 	if err != nil {
 		logger.Errorf("Could not build the link graph for tree root %s: %s", treeRoot, err)
@@ -59,8 +61,8 @@ func verifyTree(treeRoot string) error {
 
 	logNodes(nodes)
 
-	reports := checkdock.BuildReport(treeRoot, nodes, implicitIndexes)
-	if !checkdock.ValidateReports(reports, logger) {
+	reports := checkdoc.BuildReport(treeRoot, nodes, implicitIndexes)
+	if !checkdoc.ValidateReports(reports, logger) {
 		logger.Errorf("Verify failed on tree root %s", treeRoot)
 		return fmt.Errorf("verify failed on tree root %s", treeRoot)
 	}
@@ -68,7 +70,7 @@ func verifyTree(treeRoot string) error {
 	return nil
 }
 
-func logNodes(nodes []checkdock.LinkGraphNode) {
+func logNodes(nodes []checkdoc.LinkGraphNode) {
 	logger.Debugf("Found %d nodes at:", len(nodes))
 	for _, node := range nodes {
 		logger.Debugf("\t%s:", node.RelativePath)

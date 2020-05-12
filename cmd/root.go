@@ -40,7 +40,7 @@ func init() {
 
 	logger.SetFormatter(&log.TextFormatter{
 		DisableTimestamp: true,
-		ForceColors: true,
+		ForceColors:      true,
 	})
 	logger.SetLevel(log.DebugLevel)
 }

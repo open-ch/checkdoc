@@ -1,11 +1,12 @@
-package pkg
+package checkdoc
 
 import (
 	"fmt"
-	"osag/tools/checkdock/pkg/mockrepo"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/open-ch/checkdoc/pkg/mockrepo"
 
 	"github.com/stretchr/testify/assert"
 )

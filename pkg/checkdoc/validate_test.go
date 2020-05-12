@@ -1,4 +1,4 @@
-package pkg
+package checkdoc
 
 import (
 	"path/filepath"
@@ -99,7 +99,8 @@ func TestCheckForNonExistingPaths(t *testing.T) {
 
 	nonExisting := checkForNonExistingPaths(treeRoot, pathSet)
 
-	assert.Equal(t, []string{"non-existing", "sub-dir-a/neither"}, nonExisting)
+	assert.Contains(t, nonExisting, "non-existing")
+	assert.Contains(t, nonExisting, "sub-dir-a/neither")
 }
 
 func TestResolveImplicitPaths(t *testing.T) {
@@ -136,14 +137,14 @@ func TestResolveImplicitPathsTestData(t *testing.T) {
 	// hence, only files with an explicit reference are present in the map.
 	assert.Equal(t, 8, len(rawPathSet))
 	assert.Equal(t, map[string]bool{
-		"some-md-file.md":            false,
-		"sub-dir-b":                  false,
-		"sub-dir-a/nested-sub-dir-a": false,
+		"some-md-file.md":                                  false,
+		"sub-dir-b":                                        false,
+		"sub-dir-a/nested-sub-dir-a":                       false,
 		"sub-dir-a/nested-sub-dir-a/some-other-md-file.md": false,
-		"sub-dir-a/README":           false,
-		"sub-dir-a/nested-sub-dir-b": false,
-		"sub-dir-a/dead-end":         false,
-		"sub-dir-a/not-here":         false,
+		"sub-dir-a/README":                                 false,
+		"sub-dir-a/nested-sub-dir-b":                       false,
+		"sub-dir-a/dead-end":                               false,
+		"sub-dir-a/not-here":                               false,
 	}, rawPathSet)
 
 	// The resolution step will add any files 'implicitly' linked to,
