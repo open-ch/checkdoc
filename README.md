@@ -10,3 +10,7 @@ This executable is in charge of telling you if the documentation is in good shap
 
 While the content of this module is managed in an internal repository,
 you may still submit PR's.
+
+## CHANGELOG
+
+See the [CHANGELOG](CHANGELOG.md) file.

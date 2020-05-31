@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DEST_HOSTNAME="https://repo-java.open.ch"
+DEST_HOSTNAME="SCRUBBED-URL
 DEST_REPOSITORY="lake-snapshots"
 DEST_PATH="tools/checkdoc/checkdoc-darwin-amd64-${VERSION}"
 
