@@ -110,7 +110,14 @@ func normalizeLinksToRoot(treeRoot string, filePath string, relativeLinks []stri
 	absDirPath := filepath.Dir(absFilePath)
 	var normalizedRelativePaths []string
 	for _, relativeLink := range relativeLinks {
-		absoluteNormalizedPath, err := filepath.Abs(filepath.Join(absDirPath, relativeLink))
+
+		projectAbsoluteLink := filepath.Join(absDirPath, relativeLink)
+		// Found a reference starting with "/", where "/" refers to the project root.
+		if strings.HasPrefix(relativeLink, "/") {
+			projectAbsoluteLink = filepath.Join(treeRoot, relativeLink)
+		}
+
+		absoluteNormalizedPath, err := filepath.Abs(projectAbsoluteLink)
 		if err != nil {
 			return nil, fmt.Errorf("failed to normalize relative links from root %s, file %s:%s", treeRoot, filePath, err)
 		}

@@ -125,12 +125,11 @@ func TestFindRelevantFilesByNameAndExtensionHasDuplicate(t *testing.T) {
 func TestNormalizeLinksToRoot(t *testing.T) {
 	root := "/path/to/root/"
 	filePath := "relative/file"
-	relativeLinks := []string{"../back/one/level", "./path-in-same-dir", "same-dir-too", "sub-dir/hello"}
+	relativeLinks := []string{"../back/one/level", "./path-in-same-dir", "same-dir-too", "sub-dir/hello", "/from/project-root"}
 	normalizedLinks, err := normalizeLinksToRoot(root, filePath, relativeLinks)
 	assert.NoError(t, err, "Should not fail on valid input")
-	assert.Equal(t, 4, len(normalizedLinks))
 
-	assert.Equal(t, []string{"back/one/level", "relative/path-in-same-dir", "relative/same-dir-too", "relative/sub-dir/hello"}, normalizedLinks)
+	assert.Equal(t, []string{"back/one/level", "relative/path-in-same-dir", "relative/same-dir-too", "relative/sub-dir/hello", "from/project-root"}, normalizedLinks)
 }
 
 func TestNormalizeLinksToRootFailures(t *testing.T) {
