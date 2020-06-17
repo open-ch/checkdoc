@@ -1,10 +1,34 @@
 # checkdoc
 
-This executable is in charge of telling you if the documentation is in good shape, at least from a linking perspective.
+`checkdoc` is a tool that helps you assess if a markdown documentation tree is in good shape, at least from a linking perspective.
 
-  - find markdown files not referenced (directly or through other files) from a readme in the root directory
+Its main goal is to enforce minimal quality standards in a repository's documentation.
+
+It will tell you if:
+
+  - Markdown files are not referenced (directly or through other files) from a readme in the root directory
     of a repository
-  - find broken links
+  - There are broken internal links
+
+## Sample Usage
+
+Used on this repository, checkdoc yields the following:
+```
+$ checkdoc verify
+INFO Running verify on tree root /tmp/checkdoc
+INFO Considering basenames [] and extensions [.md]
+DEBU Found 1 nodes at:
+DEBU    README.md:
+INFO Checking for orphaned documents...
+INFO No orphans found.
+INFO Checking for dead links...
+ERRO Located some files with dead links:
+ERRO    README.md
+ERRO       CHANGELOG.md
+ERRO Verify failed on tree root /tmp/checkdoc
+```
+
+As shown above, it detects that we have a dead link to a non-existing file.
 
 ## Installing from Github
 
@@ -56,3 +80,7 @@ you may still submit PR's.
 ## CHANGELOG
 
 See the [CHANGELOG](CHANGELOG.md) file.
+
+## License
+
+Please see the LICENSE file.
