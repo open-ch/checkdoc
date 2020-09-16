@@ -20,11 +20,11 @@ func getTestDir() string {
 }
 
 func TestBuildLinkGraphNodesFailures(t *testing.T) {
-	nodes, err := BuildLinkGraphNodes("/abs/path", []string{}, []string{})
+	nodes, err := BuildLinkGraphNodes("/abs/path", []string{}, []string{}, false)
 	assert.Nil(t, nodes, "Not expecting any returned value on failure.")
 	assert.Error(t, err, "Should fail if both basename and extensions are empty.")
 
-	nodes, err = BuildLinkGraphNodes("rel/path", []string{"README"}, []string{})
+	nodes, err = BuildLinkGraphNodes("rel/path", []string{"README"}, []string{}, false)
 	assert.Nil(t, nodes, "Not expecting any returned value on failure.")
 	assert.Error(t, err, "Should fail on a relative tree root path.")
 }
@@ -33,7 +33,7 @@ func TestBuildLinkGraphNodes(t *testing.T) {
 	testDir := getTestDir()
 
 	// Simple check...
-	singleNode, err := BuildLinkGraphNodes(testDir, []string{"CHANGELOG.md"}, []string{})
+	singleNode, err := BuildLinkGraphNodes(testDir, []string{"CHANGELOG.md"}, []string{}, false)
 	assert.Nil(t, err, "Should not fail on valid input.")
 	assert.Equal(t, 1, len(singleNode))
 

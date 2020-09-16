@@ -11,7 +11,7 @@ import (
 func TestValidateSimple(t *testing.T) {
 	treeRoot := filepath.Join(getTestDir(), "sub-dir-a", "nested-sub-dir-a")
 	extensions := []string{".md"}
-	nodes, err := BuildLinkGraphNodes(treeRoot, []string{}, extensions)
+	nodes, err := BuildLinkGraphNodes(treeRoot, []string{}, extensions, false)
 	assert.NoError(t, err)
 
 	logger := log.New()
@@ -20,12 +20,20 @@ func TestValidateSimple(t *testing.T) {
 	assert.True(t, ValidateReports(reports, logger), "The specified directory is expected to be valid.")
 }
 
+func TestBuildLinkGraphNodesWithGitIgnore(t *testing.T) {
+	treeRoot := getTestDir()
+	extensions := []string{".md"}
+	nodes, err := BuildLinkGraphNodes(treeRoot, []string{}, extensions, true)
+	assert.NoError(t, err)
+	assert.Equal(t, 3, len(nodes), "Expecting To have only three nodes due to gitignore.")
+}
+
 func TestValidateFail(t *testing.T) {
 	treeRoot := getTestDir()
 	implicitIndexes := []string{"README.md", "README"}
 	baseNames := []string{"README"}
 	extensions := []string{".md"}
-	nodes, err := BuildLinkGraphNodes(treeRoot, baseNames, extensions)
+	nodes, err := BuildLinkGraphNodes(treeRoot, baseNames, extensions, false)
 	assert.NoError(t, err)
 
 	logger := log.New()
@@ -39,7 +47,7 @@ func TestBuildReport(t *testing.T) {
 	implicitIndexes := []string{"README.md", "README"}
 	baseNames := []string{"README"}
 	extensions := []string{".md"}
-	nodes, err := BuildLinkGraphNodes(treeRoot, baseNames, extensions)
+	nodes, err := BuildLinkGraphNodes(treeRoot, baseNames, extensions, false)
 	assert.NoError(t, err)
 
 	reports := BuildReport(treeRoot, nodes, implicitIndexes)
@@ -129,7 +137,7 @@ func TestResolveImplicitPathsTestData(t *testing.T) {
 	baseNames := []string{"CHANGELOG", "README"}
 	extensions := []string{".md"}
 
-	nodes, err := BuildLinkGraphNodes(treeRoot, baseNames, extensions)
+	nodes, err := BuildLinkGraphNodes(treeRoot, baseNames, extensions, false)
 	assert.NoError(t, err)
 	rawPathSet := buildPathSet(nodes)
 
