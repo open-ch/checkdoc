@@ -3,6 +3,7 @@ package checkdoc
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/open-ch/go-libs/logger"
 )
@@ -84,7 +85,7 @@ func logDeadLinks(withDeadLinks []NodeReport, logger logger.Logger) {
 // BuildReport will run through the passed nodes, using the specified root to run its checks, and build a report for each node
 // that will be container within the returned map
 func BuildReport(treeRoot string, nodes []LinkGraphNode, implicitIndexes []string) map[string]NodeReport {
-	rawPathSet := buildPathSet(nodes)
+	rawPathSet := BuildLocalPathSet(nodes)
 
 	resolvedPaths := resolveImplicitPaths(treeRoot, implicitIndexes, rawPathSet)
 
@@ -144,8 +145,8 @@ func buildDeadLinkReport(resolvedPathSet map[string]bool, nodes []LinkGraphNode)
 	return toRet
 }
 
-// buildPathSet returns a set of all links found in the passed nodes.
-func buildPathSet(nodes []LinkGraphNode) map[string]bool {
+// BuildLocalPathSet returns a set of all local links found in the passed nodes.
+func BuildLocalPathSet(nodes []LinkGraphNode) map[string]bool {
 	toRet := make(map[string]bool)
 	for _, node := range nodes {
 		for _, relativePath := range node.NormalizedLocalRelativeLinks {
@@ -153,6 +154,25 @@ func buildPathSet(nodes []LinkGraphNode) map[string]bool {
 		}
 	}
 	return toRet
+}
+
+// EnsureDirectoriesEndWithSlash takes a pathset of existing files and directories,
+// and ensures that all directories end with a forward slash ('/').
+func EnsureDirectoriesEndWithSlash(treeRoot string, pathSet map[string]bool) (map[string]bool, error) {
+	toRet := make(map[string]bool)
+	for path := range pathSet {
+		stat, err := os.Stat(filepath.Join(treeRoot, path))
+		if err != nil {
+			return nil, err
+		}
+		if stat.IsDir() && !strings.HasSuffix(path, "/") {
+			toRet[path+"/"] = false
+		} else {
+			toRet[path] = false
+		}
+
+	}
+	return toRet, nil
 }
 
 // checkForNonExistingPaths checks that all keys in the passed set exists, and returns a slice

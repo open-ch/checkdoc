@@ -86,7 +86,7 @@ func TestBuildPathSet(t *testing.T) {
 	nodeA := LinkGraphNode{"some/path", nil, []string{"path/a", "path/b"}}
 	nodeB := LinkGraphNode{"some/path", nil, []string{"path/b", "path/c"}}
 
-	pathSet := buildPathSet([]LinkGraphNode{nodeA, nodeB})
+	pathSet := BuildLocalPathSet([]LinkGraphNode{nodeA, nodeB})
 	expected := map[string]bool{
 		"path/a": false,
 		"path/b": false,
@@ -139,20 +139,20 @@ func TestResolveImplicitPathsTestData(t *testing.T) {
 
 	nodes, err := BuildLinkGraphNodes(treeRoot, baseNames, extensions, false)
 	assert.NoError(t, err)
-	rawPathSet := buildPathSet(nodes)
+	rawPathSet := BuildLocalPathSet(nodes)
 
 	// At this point we have not done any implicit resolution:
 	// hence, only files with an explicit reference are present in the map.
 	assert.Equal(t, 8, len(rawPathSet))
 	assert.Equal(t, map[string]bool{
-		"some-md-file.md":                                  false,
-		"sub-dir-b":                                        false,
-		"sub-dir-a/nested-sub-dir-a":                       false,
+		"some-md-file.md":            false,
+		"sub-dir-b":                  false,
+		"sub-dir-a/nested-sub-dir-a": false,
 		"sub-dir-a/nested-sub-dir-a/some-other-md-file.md": false,
-		"sub-dir-a/README":                                 false,
-		"sub-dir-a/nested-sub-dir-b":                       false,
-		"sub-dir-a/dead-end":                               false,
-		"sub-dir-a/not-here":                               false,
+		"sub-dir-a/README":           false,
+		"sub-dir-a/nested-sub-dir-b": false,
+		"sub-dir-a/dead-end":         false,
+		"sub-dir-a/not-here":         false,
 	}, rawPathSet)
 
 	// The resolution step will add any files 'implicitly' linked to,
@@ -229,4 +229,23 @@ func TestBuildDeadLinkReport(t *testing.T) {
 		"README.md":        {},
 		"sub-dir-a/README": {"sub-dir-c", "sub-dir-c/some-file"},
 	}, deadLinkReport)
+}
+
+func TestEnsureDirectoriesEndWithSlash(t *testing.T) {
+	treeRoot := getTestDir()
+
+	pathSet := map[string]bool{
+		"README.md":        false,
+		"sub-dir-a":        false,
+		"sub-dir-a/README": false,
+	}
+
+	processed, err := EnsureDirectoriesEndWithSlash(treeRoot, pathSet)
+
+	assert.Nil(t, err, "Not expecting a failure")
+	assert.Equal(t, map[string]bool{
+		"README.md":        false,
+		"sub-dir-a/":        false,
+		"sub-dir-a/README": false,
+	}, processed)
 }

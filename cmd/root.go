@@ -13,6 +13,8 @@ var (
 	treeRoot        string
 	resolveRepoRoot bool
 
+	respectGitIgnore bool
+
 	rootCmd = &cobra.Command{
 		Use:   "checkdoc",
 		Short: "checkdoc is a markdown documentation validator",
@@ -37,6 +39,9 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&resolveRepoRoot, "use-git-root", "g", true,
 		"from the given root, fall back to the repository's root."+
 			" This will cause checkdoc to fail if --root is not pointing to a repository.")
+
+	rootCmd.PersistentFlags().BoolVar(&respectGitIgnore, "respect-git-ignore", true,
+		`If true, will check all potential documents against the repository's gitignore files.'`)
 
 	logger.SetFormatter(&log.TextFormatter{
 		DisableTimestamp: true,

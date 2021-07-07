@@ -15,8 +15,6 @@ const gitRootIndicator = ".git"
 
 func init() {
 
-	var respectGitIgnore bool
-
 	// verifyCmd represents the verify command
 	var verifyCmd = &cobra.Command{
 		Use:   "verify",
@@ -36,12 +34,6 @@ Currently, verify will check for two things:
 		},
 	}
 
-	verifyCmd.Flags().BoolVar(&respectGitIgnore, "respect-git-ignore", true,
-		`If true, will check all potential documents against the repository's gitignore files.'`)
-
-	// 'verify' only needs the global flags.
-	// Viper seems not to tolerate a CLI with a single, root command, so this file defines the
-	// only thing that you can currently do.
 	rootCmd.AddCommand(verifyCmd)
 }
 

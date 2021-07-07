@@ -44,7 +44,12 @@ type LinkGraphNode struct {
 // All matching files will have a corresponding node, but they may well have internal links that point to files
 // that do not have a corresponding node, or files that may not even exist.
 // TODO deduplicate when/where relevant (if matches occur via basename and extension)
-func BuildLinkGraphNodes(treeRoot string, baseNames []string, fileExtensions []string, respectGitIgnore bool) ([]LinkGraphNode, error) {
+func BuildLinkGraphNodes(
+	treeRoot string,
+	baseNames []string,
+	fileExtensions []string,
+	respectGitIgnore bool,
+) ([]LinkGraphNode, error) {
 
 	// Input validation
 	if len(baseNames) == 0 && len(fileExtensions) == 0 {
@@ -61,14 +66,13 @@ func BuildLinkGraphNodes(treeRoot string, baseNames []string, fileExtensions []s
 		return nil, err
 	}
 
-	
 	var filteredResults []string
 	if respectGitIgnore {
 		// Filter out anything that matches a gitignore (if required)
 		// Respect the gitignore
 		gitIgnore, err := gitignore.NewRepository(treeRoot)
 		if err != nil {
-			fmt.Errorf("failed to build up a gitignore from a git repository. " +
+			fmt.Errorf("failed to build up a gitignore from a git repository. "+
 				"Is treeRoot pointing to a git repository? It was: %s - %s", treeRoot, err)
 		}
 		for _, path := range results {
@@ -76,8 +80,6 @@ func BuildLinkGraphNodes(treeRoot string, baseNames []string, fileExtensions []s
 			match := gitIgnore.Absolute(path, false)
 			if match == nil {
 				filteredResults = append(filteredResults, path)
-			} else {
-				println("Ignoring: ", path)
 			}
 		}
 	} else {
