@@ -15,6 +15,8 @@ var (
 
 	respectGitIgnore bool
 
+	verbose bool
+
 	rootCmd = &cobra.Command{
 		Use:   "checkdoc",
 		Short: "checkdoc is a markdown documentation validator",
@@ -43,15 +45,21 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&respectGitIgnore, "respect-git-ignore", true,
 		`If true, will check all potential documents against the repository's gitignore files.'`)
 
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Detailed output if true")
+
 	logger.SetFormatter(&log.TextFormatter{
 		DisableTimestamp: true,
 		ForceColors:      true,
 	})
-	logger.SetLevel(log.DebugLevel)
 }
 
 // Execute runs the whole enchilada, baby!
 func Execute() {
+	if verbose {
+		logger.SetLevel(log.DebugLevel)
+	} else {
+		logger.SetLevel(log.InfoLevel)
+	}
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(-1)

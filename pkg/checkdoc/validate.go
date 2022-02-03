@@ -27,7 +27,6 @@ type NodeReport struct {
 //
 // This method returns 'true' if no issues where found, and false otherwise
 func ValidateReports(reports map[string]NodeReport, logger logger.Logger) bool {
-	// TODO this function could take a logger and print useful things to it.
 	// TODO consider adding rules allowing for things like CHANGELOG files not to be linked to
 	// TODO add a flag to tolerate or refuse things like README (ie, force the extension)
 

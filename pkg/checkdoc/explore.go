@@ -101,8 +101,16 @@ func parseFilesAndBuildGraph(absFilePaths []string, treeRoot string) ([]LinkGrap
 	var graphNodes []LinkGraphNode
 	for _, parsedFile := range parsedFiles {
 		filePathFromTreeRoot := strings.TrimPrefix(parsedFile.AbsPath, sanitizedRoot)
-		normalizedRelLinks, err := normalizeLinksToRoot(sanitizedRoot, filePathFromTreeRoot,
-			keepLinksAsStrings(mdutils.FilterLocalLinks(mdutils.ExtractAllLinks(parsedFile.ParsedAST))))
+		normalizedRelLinks, err :=
+			normalizeLinksToRoot(
+				sanitizedRoot,
+				filePathFromTreeRoot,
+				keepLinksAsStrings(
+					mdutils.FilterLocalLinks(
+						mdutils.ExtractAllLinks(parsedFile.ParsedAST)),
+					true,
+				),
+			)
 
 		if err != nil {
 			return nil, fmt.Errorf("failed to normalize relative links in %s from root %s:%s", normalizedRelLinks, treeRoot, err)
@@ -119,13 +127,17 @@ func parseFilesAndBuildGraph(absFilePaths []string, treeRoot string) ([]LinkGrap
 	return graphNodes, nil
 }
 
-func keepLinksAsStrings(linkDatas []blackfriday.LinkData) []string {
+func keepLinksAsStrings(linkDatas []blackfriday.LinkData, trimAnchors bool) []string {
 	var toRet []string
 	for _, linkData := range linkDatas {
-		// TODO handle links that contain an anchor -> they would break the current logic.
-		//  instead of removing the anchor, we will probably want to do some additional validation,
-		//  ie, does an anchor exist in the destination file.
-		toRet = append(toRet, string(linkData.Destination))
+		// TODO validate existence of Anchor at destination?
+		var linkStr = string(linkData.Destination)
+
+		if trimAnchors {
+			linkStr = strings.Split(linkStr, "#")[0]
+		}
+
+		toRet = append(toRet, linkStr)
 	}
 	return toRet
 }
