@@ -1,5 +1,6 @@
 # checkdoc
 
+
 `checkdoc` is a tool that helps you assess if a markdown documentation tree is in good shape, at least from a linking perspective.
 
 Its main goal is to enforce minimal quality standards in a repository's documentation.
