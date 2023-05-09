@@ -13,12 +13,11 @@ import (
 var outputPath string
 
 func init() {
-
 	// verifyCmd represents the verify command
 	var catLinksCmd = &cobra.Command{
 		Use:   "catlinks",
 		Short: "Searches and dumps internal links found in the documentation files",
-		Long: `Searches and dumps internal links found int documentation files: 
+		Long: `Searches and dumps internal links found int documentation files:
 This only includes links to local files, and does not include any HTTP, FTP or any other such link.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := runCatLinks()
@@ -73,17 +72,16 @@ func catLinks(treeRoot string, respectGitIgnore bool, output io.Writer) error {
 	return nil
 }
 
-
 // We're interested in:
-//  - excluding links to markdown files (implicit or explicit)
-//  - excluding links to big files (?)
-//  - including links to any local source file
-//  - exclude non-file links (not relevant as long as we only deal with files)
+//   - excluding links to markdown files (implicit or explicit)
+//   - excluding links to big files (?)
+//   - including links to any local source file
+//   - exclude non-file links (not relevant as long as we only deal with files)
 //
 // This means:
-//  - filter out anything that ends in .md, README or CHANGELOG
-//  - filter out anything that points to a directory (implicitly that's a README)
-//  -
+//   - filter out anything that ends in .md, README or CHANGELOG
+//   - filter out anything that points to a directory (implicitly that's a README)
+//     -
 func filterLinks(paths map[string]bool) map[string]bool {
 	filtered := make(map[string]bool)
 	for path := range paths {

@@ -50,7 +50,6 @@ func BuildLinkGraphNodes(
 	fileExtensions []string,
 	respectGitIgnore bool,
 ) ([]LinkGraphNode, error) {
-
 	// Input validation
 	if len(baseNames) == 0 && len(fileExtensions) == 0 {
 		return nil, fmt.Errorf("need to specify at least one base name or extension")
@@ -72,7 +71,7 @@ func BuildLinkGraphNodes(
 		// Respect the gitignore
 		gitIgnore, err := gitignore.NewRepository(treeRoot)
 		if err != nil {
-			fmt.Errorf("failed to build up a gitignore from a git repository. "+
+			return nil, fmt.Errorf("failed to build up a gitignore from a git repository. "+
 				"Is treeRoot pointing to a git repository? It was: %s - %s", treeRoot, err)
 		}
 		for _, path := range results {
@@ -150,7 +149,6 @@ func normalizeLinksToRoot(treeRoot string, filePath string, relativeLinks []stri
 	absDirPath := filepath.Dir(absFilePath)
 	var normalizedRelativePaths []string
 	for _, relativeLink := range relativeLinks {
-
 		projectAbsoluteLink := filepath.Join(absDirPath, relativeLink)
 		// Found a reference starting with "/", where "/" refers to the project root.
 		if strings.HasPrefix(relativeLink, "/") {
@@ -179,7 +177,6 @@ func findMatchingFiles(treeRoot string, baseNames []string, fileExtensions []str
 		}
 
 		collectedFiles = append(collectedFiles, results...)
-
 	}
 	for _, ext := range fileExtensions {
 		results, err := fsutils.SearchByExtension(treeRoot, ext)

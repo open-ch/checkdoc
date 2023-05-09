@@ -22,16 +22,15 @@ type NodeReport struct {
 // a graph library, something like gonum/graph.
 
 // ValidateReports the passed report map. Currently, this checks that:
-//  - there are no orphan pages (without inbound links), except for the root README.md
-//  - internal links point to existing things (either files, directories or other readmes)
+//   - there are no orphan pages (without inbound links), except for the root README.md
+//   - internal links point to existing things (either files, directories or other readmes)
 //
 // This method returns 'true' if no issues where found, and false otherwise
-func ValidateReports(reports map[string]NodeReport, logger logger.Logger) bool {
+func ValidateReports(reports map[string]NodeReport, log logger.Logger) bool {
 	// TODO consider adding rules allowing for things like CHANGELOG files not to be linked to
 	// TODO add a flag to tolerate or refuse things like README (ie, force the extension)
-
 	var isValid = true
-	logger.Infof("Checking for orphaned documents...")
+	log.Infof("Checking for orphaned documents...")
 	var orphans []string
 	for path, report := range reports {
 		// TODO specify the root file via an option
@@ -40,9 +39,9 @@ func ValidateReports(reports map[string]NodeReport, logger logger.Logger) bool {
 			isValid = false
 		}
 	}
-	logOrphans(orphans, logger)
+	logOrphans(orphans, log)
 
-	logger.Infof("Checking for dead links...")
+	log.Infof("Checking for dead links...")
 	var withDeadLinks []NodeReport
 	for _, report := range reports {
 		if len(report.DeadLinks) != 0 {
@@ -51,32 +50,32 @@ func ValidateReports(reports map[string]NodeReport, logger logger.Logger) bool {
 		}
 	}
 
-	logDeadLinks(withDeadLinks, logger)
+	logDeadLinks(withDeadLinks, log)
 
 	return isValid
 }
 
-func logOrphans(orphans []string, logger logger.Logger) {
+func logOrphans(orphans []string, log logger.Logger) {
 	if len(orphans) == 0 {
-		logger.Infof("No orphans found.")
+		log.Infof("No orphans found.")
 		return
 	}
-	logger.Errorf("Located some orphan documents:")
+	log.Errorf("Located some orphan documents:")
 	for _, orphan := range orphans {
-		logger.Errorf("\t%s", orphan)
+		log.Errorf("\t%s", orphan)
 	}
 }
 
-func logDeadLinks(withDeadLinks []NodeReport, logger logger.Logger) {
+func logDeadLinks(withDeadLinks []NodeReport, log logger.Logger) {
 	if len(withDeadLinks) == 0 {
-		logger.Infof("No dead links found.")
+		log.Infof("No dead links found.")
 		return
 	}
-	logger.Errorf("Located some files with dead links:")
+	log.Errorf("Located some files with dead links:")
 	for _, invalid := range withDeadLinks {
-		logger.Errorf("\t%s", invalid.Node.RelativePath)
+		log.Errorf("\t%s", invalid.Node.RelativePath)
 		for _, deadLink := range invalid.DeadLinks {
-			logger.Errorf("\t\t%s", deadLink)
+			log.Errorf("\t\t%s", deadLink)
 		}
 	}
 }
@@ -107,10 +106,9 @@ func BuildReport(treeRoot string, nodes []LinkGraphNode, implicitIndexes []strin
 // buildOrphanReport looks up all passed nodes in the specified pathSet, and returns a map telling if they are present in it,
 // ie, have or have not been linked to.
 // Note:
-//  - this won't catch any node that linked to itself, but this seems like an acceptable corner case, as it
-//    would look pretty obvious in a document anyway.
-//  - resolvedPathSet is expected to contain only paths to files, not directories.
-//
+//   - this won't catch any node that linked to itself, but this seems like an acceptable corner case, as it
+//     would look pretty obvious in a document anyway.
+//   - resolvedPathSet is expected to contain only paths to files, not directories.
 func buildOrphanReport(resolvedPathSet map[string]bool, nodes []LinkGraphNode) map[string]bool {
 	orphanReport := make(map[string]bool)
 	// resolvedPathSet contains an exhaustive set of all existing local links, relative to the tree root.
@@ -169,7 +167,6 @@ func EnsureDirectoriesEndWithSlash(treeRoot string, pathSet map[string]bool) (ma
 		} else {
 			toRet[path] = false
 		}
-
 	}
 	return toRet, nil
 }

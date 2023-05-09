@@ -14,7 +14,6 @@ import (
 const gitRootIndicator = ".git"
 
 func init() {
-
 	// verifyCmd represents the verify command
 	var verifyCmd = &cobra.Command{
 		Use:   "verify",
@@ -22,7 +21,7 @@ func init() {
 		Long: `Run some checks against the markdown documentation found in a directory hierarchy.
 
 Currently, verify will check for two things:
- - orphan README.md files: these are files that are not linked to 
+ - orphan README.md files: these are files that are not linked to
    from the repo's root directory, either directly or indirectly.
  - broken links.`,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -75,11 +74,11 @@ func logNodes(nodes []checkdoc.LinkGraphNode) {
 
 // getCorrectPathToTreeRoot is in charge of returning an absolute path to the 'correct' tree root, depending on the
 // specified 'resolveRepoRoot' flag:
-//  - if 'resolveRepoRoot' is true, the hierarchy above the passedRootPath will be explored
-//    for a git repository root, and that path will be used as the root
-//    from which to check documentation consistency.
-//  - otherwise, the passed path will be returned after having made sure it is absolute,
-//    calling Abs() if required.
+//   - if 'resolveRepoRoot' is true, the hierarchy above the passedRootPath will be explored
+//     for a git repository root, and that path will be used as the root
+//     from which to check documentation consistency.
+//   - otherwise, the passed path will be returned after having made sure it is absolute,
+//     calling Abs() if required.
 func getCorrectPathToTreeRoot(passedRootPath string, resolveRepoRoot bool) (string, error) {
 	absPath, err := filepath.Abs(passedRootPath)
 	if err != nil {

@@ -79,7 +79,6 @@ func TestBuildReport(t *testing.T) {
 
 	assert.False(t, reports["sub-dir-a/nested-sub-dir-a/some-other-md-file.md"].IsOrphan, "This file should be linked to")
 	assert.Equal(t, 0, len(reports["sub-dir-a/nested-sub-dir-a/some-other-md-file.md"].DeadLinks))
-
 }
 
 func TestBuildPathSet(t *testing.T) {
@@ -170,11 +169,9 @@ func TestResolveImplicitPathsTestData(t *testing.T) {
 		"sub-dir-a/nested-sub-dir-b":                       false,
 		"sub-dir-a/README":                                 false,
 	}, resolvedPaths)
-
 }
 
 func TestSearchOrphansAllOrphans(t *testing.T) {
-
 	nodeA := LinkGraphNode{"README.md", nil, []string{"non-existing"}}
 	nodeB := LinkGraphNode{"sub-dir-a/README.md", nil, []string{}}
 
@@ -188,11 +185,9 @@ func TestSearchOrphansAllOrphans(t *testing.T) {
 		"README.md":           true, // nothing should point to the root node
 		"sub-dir-a/README.md": true, // the root node points to this one.
 	}, orphans, "expected to find only orphans")
-
 }
 
 func TestSearchOrphansOnlyRootOrphan(t *testing.T) {
-
 	nodeA := LinkGraphNode{"README.md", nil,
 		[]string{"non-existing", "sub-dir-a/README.md"}}
 	nodeB := LinkGraphNode{"sub-dir-a/README.md", nil, []string{}}
@@ -208,11 +203,9 @@ func TestSearchOrphansOnlyRootOrphan(t *testing.T) {
 		"README.md":           true,  // nothing should point to the root node
 		"sub-dir-a/README.md": false, // the root node points to this one.
 	}, orphans, "expected to find only the root as orphan")
-
 }
 
 func TestBuildDeadLinkReport(t *testing.T) {
-
 	pathSet := map[string]bool{
 		"README.md":        false,
 		"sub-dir-a":        false, // points to a dir
@@ -245,7 +238,7 @@ func TestEnsureDirectoriesEndWithSlash(t *testing.T) {
 	assert.Nil(t, err, "Not expecting a failure")
 	assert.Equal(t, map[string]bool{
 		"README.md":        false,
-		"sub-dir-a/":        false,
+		"sub-dir-a/":       false,
 		"sub-dir-a/README": false,
 	}, processed)
 }
