@@ -3,10 +3,10 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"github.com/open-ch/checkdoc/pkg/checkdoc"
 	"github.com/spf13/cobra"
 	"io"
 	"os"
+	"github.com/open-ch/checkdoc/pkg/checkdoc"
 	"strings"
 )
 

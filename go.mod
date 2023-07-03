@@ -1,6 +1,6 @@
-module github.com/open-ch/checkdoc
+module osag/tools/checkdoc
 
-go 1.18
+go 1.20
 
 replace github.com/open-ch/go-libs => ../../libs/go/public
 

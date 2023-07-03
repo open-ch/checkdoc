@@ -77,10 +77,6 @@ Use "checkdoc [command] --help" for more information about a command.
 While the content of this module is managed in an internal repository,
 you may still submit PR's.
 
-## CHANGELOG
-
-See the [CHANGELOG](CHANGELOG.md) file.
-
 ## License
 
 Please see the LICENSE file.

@@ -12,7 +12,8 @@ import (
 )
 
 // TODO something like pytest's fixtures probably exists in go, we could save some copy pasta this way.
-//  note from Elwin: have a look at https://pkg.go.dev/github.com/stretchr/testify/suite?tab=doc
+//
+//	note from Elwin: have a look at https://pkg.go.dev/github.com/stretchr/testify/suite?tab=doc
 func getTestDir() string {
 	dir := filepath.Join(mockrepo.MockRepo(), "test-data")
 	fmt.Printf("dir: %s\n", dir)

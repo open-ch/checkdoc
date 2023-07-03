@@ -3,18 +3,19 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
+
+	"github.com/spf13/cobra"
 
 	"github.com/open-ch/checkdoc/pkg/checkdoc"
-	"github.com/open-ch/go-libs/fsutils"
-	"github.com/spf13/cobra"
 )
 
 // A file or dir name telling us we are at the root of a git repo
 const gitRootIndicator = ".git"
 
 func init() {
-	// verifyCmd represents the verify command
 	var verifyCmd = &cobra.Command{
 		Use:   "verify",
 		Short: "Runs sanity checks on the documentation",
@@ -82,16 +83,21 @@ func logNodes(nodes []checkdoc.LinkGraphNode) {
 func getCorrectPathToTreeRoot(passedRootPath string, resolveRepoRoot bool) (string, error) {
 	absPath, err := filepath.Abs(passedRootPath)
 	if err != nil {
-		logger.Errorf("Could not convert %s to an absolute path: %s", passedRootPath, err)
-		return "", err
+		return "", fmt.Errorf("Could not convert %s to an absolute path: %w", passedRootPath, err)
 	}
 	if resolveRepoRoot {
-		repoRoot, err := fsutils.SearchClosestParentContaining(absPath, gitRootIndicator)
+		repoRoot, err := getRepositoryRoot(absPath)
 		if err != nil {
-			logger.Errorf("Failed to find git repo root from path %s:%s", passedRootPath, err)
-			return "", err
+			return "", fmt.Errorf("Failed to find git repo root from path %s: %w", passedRootPath, err)
 		}
 		return repoRoot, nil
 	}
 	return absPath, nil
+}
+
+func getRepositoryRoot(path string) (string, error) {
+	gitCmd := exec.Command("git", "rev-parse", "--show-toplevel")
+	gitCmd.Dir = path
+	output, err := gitCmd.CombinedOutput()
+	return strings.TrimSpace(string(output)), err
 }

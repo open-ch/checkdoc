@@ -4,8 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/open-ch/go-libs/logger"
 )
 
 // NodeReport contains some information about the quality of a node
@@ -26,7 +24,7 @@ type NodeReport struct {
 //   - internal links point to existing things (either files, directories or other readmes)
 //
 // This method returns 'true' if no issues where found, and false otherwise
-func ValidateReports(reports map[string]NodeReport, log logger.Logger) bool {
+func ValidateReports(reports map[string]NodeReport, log Logger) bool {
 	// TODO consider adding rules allowing for things like CHANGELOG files not to be linked to
 	// TODO add a flag to tolerate or refuse things like README (ie, force the extension)
 	var isValid = true
@@ -55,7 +53,7 @@ func ValidateReports(reports map[string]NodeReport, log logger.Logger) bool {
 	return isValid
 }
 
-func logOrphans(orphans []string, log logger.Logger) {
+func logOrphans(orphans []string, log Logger) {
 	if len(orphans) == 0 {
 		log.Infof("No orphans found.")
 		return
@@ -66,7 +64,7 @@ func logOrphans(orphans []string, log logger.Logger) {
 	}
 }
 
-func logDeadLinks(withDeadLinks []NodeReport, log logger.Logger) {
+func logDeadLinks(withDeadLinks []NodeReport, log Logger) {
 	if len(withDeadLinks) == 0 {
 		log.Infof("No dead links found.")
 		return
