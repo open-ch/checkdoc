@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/open-ch/checkdoc/pkg/mockrepo"
+	"github.com/open-ch/checkdoc/mockrepo"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -3,11 +3,12 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"github.com/spf13/cobra"
 	"io"
 	"os"
-	"github.com/open-ch/checkdoc/pkg/checkdoc"
+	"github.com/open-ch/checkdoc/checkdoc"
 	"strings"
+
+	"github.com/spf13/cobra"
 )
 
 var outputPath string

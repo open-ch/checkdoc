@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/open-ch/checkdoc/pkg/checkdoc"
+	"github.com/open-ch/checkdoc/checkdoc"
 )
 
 // A file or dir name telling us we are at the root of a git repo
