@@ -1,5 +1,7 @@
 package checkdoc
 
+//revive:disable:flag-parameter
+
 import (
 	"fmt"
 	"path/filepath"
@@ -7,9 +9,9 @@ import (
 
 	"github.com/denormal/go-gitignore"
 	"github.com/open-ch/go-libs/fsutils"
-	"github.com/open-ch/go-libs/mdutils"
-
 	blackfriday "github.com/russross/blackfriday/v2"
+
+	"github.com/open-ch/checkdoc/markdown"
 )
 
 // parsedAST is a tuple of an absolute path to a markdown file, and its parsed abstract syntax tree (AST).
@@ -105,8 +107,8 @@ func parseFilesAndBuildGraph(absFilePaths []string, treeRoot string) ([]LinkGrap
 				sanitizedRoot,
 				filePathFromTreeRoot,
 				keepLinksAsStrings(
-					mdutils.FilterLocalLinks(
-						mdutils.ExtractAllLinks(parsedFile.ParsedAST)),
+					markdown.FilterLocalLinks(
+						markdown.ExtractAllLinks(parsedFile.ParsedAST)),
 					true,
 				),
 			)
@@ -196,7 +198,7 @@ func parseFiles(mdFilePaths []string) ([]*parsedAST, error) {
 		if !filepath.IsAbs(mdFilePath) {
 			return nil, fmt.Errorf("will not parse a relative path: %s", mdFilePath)
 		}
-		ast, err := mdutils.ParseFileToAst(mdFilePath)
+		ast, err := markdown.ParseFileToAst(mdFilePath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse markdow file %s: %s", mdFilePath, err)
 		}

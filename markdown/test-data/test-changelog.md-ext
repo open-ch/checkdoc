@@ -1,0 +1,183 @@
+# CHANGELOG
+
+> _It worked last week. What has changed?_
+>
+> [**Anonymous Developer**]
+
+This file will contain any important change regarding the environment in which Bazel and other build tools need to run.
+
+For example, any update that requires users to provide a new `--define` argument should get an entry here.
+
+Changes or addition of linters should be included as well.
+
+### 11.05.2020
+
+#### Checkstyle for java code
+
+Please install checkstyle: `brew install checkstyle`.
+
+### 13.05.2020
+
+#### Environment variables
+
+Please make sure to export the following environment variables when running bazel:
+```
+DEPLOY_RPM_USERNAME
+DEPLOY_RPM_PASSWORD
+DEPLOY_RAW_USERNAME
+DEPLOY_RAW_PASSWORD
+DEPLOY_MAVEN_USERNAME
+DEPLOY_MAVEN_PASSWORD
+```
+
+#### `snapshot` targets
+
+Each package should have a `snapshot` target in its Makefile. Often, it can rely on the `release` target of the same file.
+
+By default, no snapshot release will be triggered for diffs. However, this can be enforced by writing "[RELEASE SNAPSHOT]"
+ in the commit message.
+
+#### linters
+
+For linting of java and scala files, `checkstyle` and `scalastyle` are now required locally.
+These can be installed via brew.
+
+### 04.06.2020
+
+#### kaeter-police
+
+All released packages need to have a CHANGELOG.md file that includes all the changes of the released versions
+(listed in the `versions.yml` file)
+
+The format of the changelog file should be follow the convention described in
+SCRUBBED-URL .
+
+### 10.06.2020
+The syntax to release snapshots in the diffs has changed to the following: `[snapshot: <pkg_id1>,<pkg_id2>,...]`.
+To release the snapshot for all the packages, "[snapshot: all]" is needed instead.
+
+### 29.07.2020
+
+With the addition of node/typescript into Panta, you now need to have
+some settings for npm and yarn to let them connect to the internal npm registry/proxy.
+
+Below is a relevant excerpt from the
+[docs page](SCRUBBED-URL
+on the subject:
+```
+In order to access and publish packages, set the following properties in the .npmrc config file in your home directory.
+# The login and password are that of your Sonatype Nexus account.
+# In ~/.npmrc, set
+registry=SCRUBBED-URL
+email=<short>@open.ch
+_auth="<base64 encoded login>"
+always-auth=true
+
+You can generate the base64 string you need from you Nexus account login and password like this:
+echo -n "<login>:<password>" | base64
+```
+
+You may also need to set this in your `~/.yarnrc`
+```
+registry "SCRUBBED-URL"
+strict-ssl true
+```
+
+## 07.09.2020
+
+### Switch to Bazelisk
+
+We now recommend developpers rely on `bazelisk` to run the correct version of bazel.
+(This will make updating the Bazel version much easier):
+
+```shell
+brew install bazelisk
+```
+
+### Update to `NO_PROXY`
+
+Now that we rely on the new `SCRUBBED-URL` hostname, you may need to add that host to your various `no_proxy` env variables.
+See [proxy-settings](doc/how-to/proxy-settings.md) for more details.
+
+
+## 24.11.2020
+
+### Add hadolint for Dockerfile
+
+There is a new arc linter hadolint which validates Dockerfiles. You can install it with:
+
+```shell
+brew install hadolint
+```
+
+## 09.12.2020
+
+### Add yamllint for YAML files
+
+yamllint is required to validate YAML files. Install it with:
+
+```shell
+brew install yamllint
+```
+
+## 17.06.2021
+
+### Add local configurations for Artifactory
+
+Artifactory is now used to fetch Maven dependencies and external Docker images.
+It does *NOT* affect the way images are deployed for now: you can rely on Nexus
+until the second step of the migration is completed.
+
+Your local environment should be updated with these:
+(Note that all usernames mentioned below should be in the form `<short>@open.ch`)
+
+#### Docker
+You need to setup Docker login for artifactory:
+```
+docker login SCRUBBED-URL
+```
+
+#### Maven
+You need to add an entry for nexus in `~/Library/Preferences/Coursier/credentials.properties`:
+```
+artifactory.username=<USERNAME> # In the form `<short>@open.ch`
+artifactory.password=<PASSWORD>
+artifactory.host=SCRUBBED-URL
+artifactory.auto=true
+```
+You can use the same credentials that you used for docker login.
+
+#### Environment variables
+Add the following environment variables:
+```
+DEPLOY_MAVEN_USERNAME_ARTIFACTORY # In the form `<short>@open.ch`
+DEPLOY_MAVEN_PASSWORD_ARTIFACTORY
+```
+You can use the same credentials that you used for docker login.
+
+## 30.06.2021
+### Environment variables
+Add the following environment variables:
+```
+DEPLOY_RPM_USERNAME_ARTIFACTORY # In the form `<short>@open.ch`
+DEPLOY_RPM_PASSWORD_ARTIFACTORY
+DEPLOY_RAW_USERNAME_ARTIFACTORY # In the form `<short>@open.ch`
+DEPLOY_RAW_PASSWORD_ARTIFACTORY
+```
+They can have the same value as `DEPLOY_MAVEN_USERNAME_ARTIFACTORY` / `DEPLOY_MAVEN_PASSWORD_ARTIFACTORY`.
+x
+This is for making sure that Bazel does not complain about missing environment variables, since some projects are now
+migrated to Artifactory.
+
+If you don't explicitly adapt your packages to be released on Artifactory, nothing will change for you: these environment
+variables will not be used.
+
+## 02.06.2021
+
+### Add buildifier for bazel files
+
+buildifier is required to validate BUILD, WORKSPACE and .bzl files. Install it with:
+
+```shell
+brew install buildifier
+```

@@ -1,0 +1,60 @@
+# Test Markdown File
+
+This is a naked external link:
+
+https://google.ch
+
+This is a proper external link:
+
+[open-link](https://open.ch)
+
+This is an internal relative link:
+
+[relative-link](relative/internal)
+
+This is an internal absolute link:
+
+[absolute-link](/absolute/internal)
+
+This is something that should not register as a link:
+
+/i/am/not/a/ling
+
+This neither:
+
+relative/naked/link
+
+## Nested Links
+
+Should be picked up
+
+```
+# Whether in a code block
+https://sqooba.io
+
+```
+
+in a table:
+
+| First Column | Second Column |
+|--------------|---------------|
+| Content | [relative-link](nested/relative)|
+
+or in a quote
+
+> Check that [awesome link](/nested/absolute)
+
+## Directory traversal
+
+[sibling directory](../sibling)
+[sub-dir](./sub-dir)
+
+## Weird links
+
+[Some email](mailto:julien@sqooba.io)
+
+## Remarkup Anchor and link to it
+
+{anchor #anchor-id}
+
+scroll on to [this anchor](#anchor-id)
