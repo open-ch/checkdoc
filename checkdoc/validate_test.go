@@ -9,7 +9,7 @@ import (
 )
 
 func TestValidateSimple(t *testing.T) {
-	treeRoot := filepath.Join(getTestDir(), "sub-dir-a", "nested-sub-dir-a")
+	treeRoot := filepath.Join(getTestDir(t), "sub-dir-a", "nested-sub-dir-a")
 	extensions := []string{".md"}
 	nodes, err := BuildLinkGraphNodes(treeRoot, []string{}, extensions, false)
 	assert.NoError(t, err)
@@ -21,7 +21,7 @@ func TestValidateSimple(t *testing.T) {
 }
 
 func TestBuildLinkGraphNodesWithGitIgnore(t *testing.T) {
-	treeRoot := getTestDir()
+	treeRoot := getTestDir(t)
 	extensions := []string{".md"}
 	nodes, err := BuildLinkGraphNodes(treeRoot, []string{}, extensions, true)
 	assert.NoError(t, err)
@@ -29,7 +29,7 @@ func TestBuildLinkGraphNodesWithGitIgnore(t *testing.T) {
 }
 
 func TestValidateFail(t *testing.T) {
-	treeRoot := getTestDir()
+	treeRoot := getTestDir(t)
 	implicitIndexes := []string{"README.md", "README"}
 	baseNames := []string{"README"}
 	extensions := []string{".md"}
@@ -43,7 +43,7 @@ func TestValidateFail(t *testing.T) {
 }
 
 func TestBuildReport(t *testing.T) {
-	treeRoot := getTestDir()
+	treeRoot := getTestDir(t)
 	implicitIndexes := []string{"README.md", "README"}
 	baseNames := []string{"README"}
 	extensions := []string{".md"}
@@ -96,7 +96,7 @@ func TestBuildPathSet(t *testing.T) {
 }
 
 func TestCheckForNonExistingPaths(t *testing.T) {
-	treeRoot := getTestDir()
+	treeRoot := getTestDir(t)
 	pathSet := map[string]bool{
 		"non-existing":      false, // something non existing
 		"sub-dir-a/neither": false, // not existing either
@@ -111,7 +111,7 @@ func TestCheckForNonExistingPaths(t *testing.T) {
 }
 
 func TestResolveImplicitPaths(t *testing.T) {
-	treeRoot := getTestDir()
+	treeRoot := getTestDir(t)
 	pathSet := map[string]bool{
 		"non-existing":               false, // something non existing
 		"sub-dir-a":                  false, // a directory with two matching implicits
@@ -131,7 +131,7 @@ func TestResolveImplicitPaths(t *testing.T) {
 }
 
 func TestResolveImplicitPathsTestData(t *testing.T) {
-	treeRoot := getTestDir()
+	treeRoot := getTestDir(t)
 	implicitIndexes := []string{"README.md", "README"}
 	baseNames := []string{"CHANGELOG", "README"}
 	extensions := []string{".md"}
@@ -225,7 +225,7 @@ func TestBuildDeadLinkReport(t *testing.T) {
 }
 
 func TestEnsureDirectoriesEndWithSlash(t *testing.T) {
-	treeRoot := getTestDir()
+	treeRoot := getTestDir(t)
 
 	pathSet := map[string]bool{
 		"README.md":        false,

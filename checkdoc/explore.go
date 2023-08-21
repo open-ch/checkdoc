@@ -4,11 +4,11 @@ package checkdoc
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/denormal/go-gitignore"
-	"github.com/open-ch/go-libs/fsutils"
 	blackfriday "github.com/russross/blackfriday/v2"
 
 	"github.com/open-ch/checkdoc/markdown"
@@ -172,8 +172,13 @@ func normalizeLinksToRoot(treeRoot string, filePath string, relativeLinks []stri
 
 func findMatchingFiles(treeRoot string, baseNames []string, fileExtensions []string) ([]string, error) {
 	var collectedFiles []string
+
+	// This was refactored to avoid fs util but each call to searchByFileName
+	// will do a file tree walk.
+	// TODO reverse the logice so we do a single tree walk here and then check relevant files
+	// to avoid looping the tree multiple times.
 	for _, baseName := range baseNames {
-		results, err := fsutils.SearchByFileName(treeRoot, baseName)
+		results, err := searchByFileName(treeRoot, baseName)
 		if err != nil {
 			return nil, err
 		}
@@ -181,13 +186,71 @@ func findMatchingFiles(treeRoot string, baseNames []string, fileExtensions []str
 		collectedFiles = append(collectedFiles, results...)
 	}
 	for _, ext := range fileExtensions {
-		results, err := fsutils.SearchByExtension(treeRoot, ext)
+		results, err := searchByExtension(treeRoot, ext)
 		if err != nil {
 			return nil, err
 		}
 		collectedFiles = append(collectedFiles, results...)
 	}
 	return collectedFiles, nil
+}
+
+// searchByFileName Given a path, returns all sub-paths to files that are named exactly like fileName
+// rootPath must be absolute
+// Note: migrated from fsutils library.
+func searchByFileName(rootPath string, baseName string) ([]string, error) {
+	if !filepath.IsAbs(rootPath) {
+		return nil, fmt.Errorf("rootPath is not absolute: %s", rootPath)
+	}
+	if len(baseName) == 0 {
+		return nil, fmt.Errorf("baseName cannot be empty")
+	}
+
+	return basenameGlob(rootPath, baseName)
+}
+
+// SearchByExtension Given a path, returns all sub-paths to files that have the specified extension 'ext'.
+// Note that 'ext' must include a dot.
+// Note: migrated from fsutils library.
+func searchByExtension(rootPath string, ext string) ([]string, error) {
+	if !filepath.IsAbs(rootPath) {
+		return nil, fmt.Errorf("rootPath is not absolute: %s", rootPath)
+	}
+	if len(ext) == 0 {
+		return nil, fmt.Errorf("extension cannot be empty")
+	}
+	if !strings.HasPrefix(ext, ".") {
+		return nil, fmt.Errorf("extension must start with a dot (.): %s", ext)
+	}
+
+	return extensionGlob(rootPath, ext)
+}
+
+// filepath.Glob does not support things like '**/file'
+// Note: migrated from fsutils library.
+func basenameGlob(dir string, baseName string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		if filepath.Base(path) == baseName {
+			files = append(files, path)
+		}
+		return nil
+	})
+
+	return files, err
+}
+
+// Note: migrated from fsutils library.
+func extensionGlob(dir string, ext string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		if filepath.Ext(path) == ext {
+			files = append(files, path)
+		}
+		return nil
+	})
+
+	return files, err
 }
 
 // parseFiles parses the filePaths, expecting them all to point to markdown files.

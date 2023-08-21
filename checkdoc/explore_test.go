@@ -2,6 +2,7 @@ package checkdoc
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -11,13 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO something like pytest's fixtures probably exists in go, we could save some copy pasta this way.
-//
-//	note from Elwin: have a look at https://pkg.go.dev/github.com/stretchr/testify/suite?tab=doc
-func getTestDir() string {
-	dir := filepath.Join(mockrepo.MockRepo(), "test-data")
+func getTestDir(t *testing.T) string {
+	t.Helper()
+	dir := filepath.Join(mockrepo.MockRepo(t), "test-data")
 	fmt.Printf("dir: %s\n", dir)
-	return filepath.Join(mockrepo.MockRepo(), "test-data")
+	return dir
 }
 
 func TestBuildLinkGraphNodesFailures(t *testing.T) {
@@ -31,7 +30,7 @@ func TestBuildLinkGraphNodesFailures(t *testing.T) {
 }
 
 func TestBuildLinkGraphNodes(t *testing.T) {
-	testDir := getTestDir()
+	testDir := getTestDir(t)
 
 	// Simple check...
 	singleNode, err := BuildLinkGraphNodes(testDir, []string{"CHANGELOG.md"}, []string{}, false)
@@ -43,7 +42,7 @@ func TestBuildLinkGraphNodes(t *testing.T) {
 }
 
 func TestFindRelevantFilesNotExisting(t *testing.T) {
-	testDir := getTestDir()
+	testDir := getTestDir(t)
 
 	emptyFind, emptyErr := findMatchingFiles(testDir, []string{}, []string{})
 	// Not that returning an error is done from the public method using this function.
@@ -60,7 +59,7 @@ func TestFindRelevantFilesNotExisting(t *testing.T) {
 }
 
 func TestFindRelevantFilesByBasename(t *testing.T) {
-	testDir := getTestDir()
+	testDir := getTestDir(t)
 
 	singleFind, err := findMatchingFiles(testDir, []string{"some-md-file.md"}, []string{})
 	assert.Equal(t, 1, len(singleFind), "expected to find a single file.")
@@ -76,7 +75,7 @@ func TestFindRelevantFilesByBasename(t *testing.T) {
 }
 
 func TestFindRelevantFilesByExtension(t *testing.T) {
-	testDir := getTestDir()
+	testDir := getTestDir(t)
 	mdFinds, err := findMatchingFiles(testDir, []string{}, []string{".md"})
 
 	assert.NoError(t, err, "Should not fail with valid arguments")
@@ -90,7 +89,7 @@ func TestFindRelevantFilesByExtension(t *testing.T) {
 }
 
 func TestFindRelevantFilesByNameAndExtension(t *testing.T) {
-	testDir := getTestDir()
+	testDir := getTestDir(t)
 	allFinds, err := findMatchingFiles(testDir, []string{"README", "CHANGELOG"}, []string{".md"})
 
 	assert.NoError(t, err, "Should not fail with valid arguments")
@@ -106,7 +105,7 @@ func TestFindRelevantFilesByNameAndExtension(t *testing.T) {
 }
 
 func TestFindRelevantFilesByNameAndExtensionHasDuplicate(t *testing.T) {
-	testDir := getTestDir()
+	testDir := getTestDir(t)
 	// We explicitely check we obtain duplicates: removing them should be done elsewehere.
 
 	withDupes, err := findMatchingFiles(testDir, []string{"CHANGELOG.md"}, []string{".md"})
@@ -143,7 +142,7 @@ func TestNormalizeLinksToRootFailures(t *testing.T) {
 }
 
 func TestParseFiles(t *testing.T) {
-	testDir := getTestDir()
+	testDir := getTestDir(t)
 	testFileA := filepath.Join(testDir, "some-md-file.md")
 	testFileB := filepath.Join(testDir, "sub-dir-a/README")
 
@@ -156,4 +155,41 @@ func TestParseFiles(t *testing.T) {
 
 	assert.NoError(t, err, "Expected no parsing error")
 	assert.Equal(t, 2, len(parsedFiles), "expected one output for each input")
+}
+
+func TestSearchByFileName(t *testing.T) {
+	workDir, err := os.Getwd()
+	assert.NoError(t, err)
+	testDir := filepath.Join(workDir, "test-data")
+
+	_, notAbsErr := searchByFileName("relative/path", "README")
+	assert.NotNil(t, notAbsErr, "Expected an error if provided with a relative path")
+
+	_, emptyNameErr := searchByFileName(testDir, "")
+	assert.NotNil(t, emptyNameErr, "Expected an error if provided with an empty filename")
+
+	singleNoExtension, _ := searchByFileName(testDir, "README")
+	assert.Equal(t, 1, len(singleNoExtension), "Expected a single match, at the root of the test directory")
+	assert.True(t, strings.HasSuffix(singleNoExtension[0], "README"))
+
+	withExtension, _ := searchByFileName(testDir, "README.md-ext")
+	assert.Equal(t, 2, len(withExtension), "Expected two matches")
+}
+
+func TestSearchByExtension(t *testing.T) {
+	workDir, err := os.Getwd()
+	assert.NoError(t, err)
+	testDir := filepath.Join(workDir, "test-data")
+
+	_, notAbsErr := searchByExtension("relative/path", ".md-ext")
+	assert.NotNil(t, notAbsErr, "Expected an error if provided with a relative path")
+
+	_, emptyNameErr := searchByExtension(testDir, "")
+	assert.NotNil(t, emptyNameErr, "Expected an error if provided with an empty extension")
+
+	_, noDot := searchByExtension(testDir, "md-ext")
+	assert.NotNil(t, noDot, "Expected an error if provided with an extension not starting with a dot.")
+
+	withExtension, _ := searchByExtension(testDir, ".md-ext")
+	assert.Equal(t, 2, len(withExtension), "Expected a single match, at the root of the test directory")
 }
