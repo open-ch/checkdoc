@@ -30,26 +30,10 @@ ERRO Verify failed on tree root /tmp/checkdoc
 
 As shown above, it detects that we have a dead link to a non-existing file.
 
-## Installing from Github
-
-For some reasons we need to clarify, cloning this repository and doing a `go install` from it works,
-but a `go get -u github.com/open-ch/checkdoc` does not.
-
-This may be due to [this issue](https://github.com/russross/blackfriday/issues/500) with the [blackfriday](https://github.com/russross/blackfriday) dependency,
-but as long as a manual installation is easy we have other priorities.
-
-Please follow the manual installation steps below.
-
-### Manual Installation
+## Installation
 
 ```
-# Move to the GOPATH source directory
-cd `go env GOPATH`/src
-mkdir -p github.com/open-ch/checkdoc
-cd github.com/open-ch
-git clone https://github.com/open-ch/checkdoc
-cd checkdoc
-go install
+go install github.com/open-ch/checkdoc@latest
 ```
 
 Then run it with `checkdoc`, assuming your `$GOPATH/bin` is on your `PATH`. You should see something along these lines:
