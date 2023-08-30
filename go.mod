@@ -1,4 +1,4 @@
-module osag/tools/checkdoc
+module github.com/open-ch/checkdoc
 
 go 1.20
 
