@@ -23,7 +23,10 @@ func MockRepo(t *testing.T) string {
 		t.Error(err)
 	}
 	// TODO refactor test to generate fixtures instead of using an archive
-	untar(f, tempDir)
+	err = untar(f, tempDir)
+	if err != nil {
+		t.Error(err)
+	}
 	err = f.Close()
 	if err != nil {
 		t.Error(err)

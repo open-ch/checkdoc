@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/slog"
 )
 
 var (
@@ -22,6 +22,20 @@ var (
 		Short: "checkdoc is a markdown documentation validator",
 		Long: "A markdown documentation validator intended to enforce a healthy documentation " +
 			"in settings such as a fat repo.",
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if verbose {
+				// Note NewTextHandler uses key=value pairs unlike the default slog format
+				// currently there's no easy way to access the default format as a handler
+				logHandler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+					Level: slog.LevelDebug,
+				})
+				slogger := slog.New(logHandler)
+				slog.SetDefault(slogger)
+				logger.SetLevel(log.DebugLevel)
+			} else {
+				logger.SetLevel(log.InfoLevel)
+			}
+		},
 	}
 
 	// Some other things that are currently fixed but may at some point be configurable
@@ -55,13 +69,8 @@ func init() {
 
 // Execute runs the whole enchilada, baby!
 func Execute() {
-	if verbose {
-		logger.SetLevel(log.DebugLevel)
-	} else {
-		logger.SetLevel(log.InfoLevel)
-	}
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
+		slog.Error("checkdoc failed", err)
+		os.Exit(1)
 	}
 }

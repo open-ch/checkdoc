@@ -2,13 +2,17 @@ package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
-	"github.com/open-ch/checkdoc/checkdoc"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/slog"
+
+	"github.com/open-ch/checkdoc/checkdoc"
 )
 
 var outputPath string
@@ -20,12 +24,8 @@ func init() {
 		Short: "Searches and dumps internal links found in the documentation files",
 		Long: `Searches and dumps internal links found int documentation files:
 This only includes links to local files, and does not include any HTTP, FTP or any other such link.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			err := runCatLinks()
-			if err != nil {
-				logger.Errorf("Verify failed: %s", err)
-				os.Exit(1)
-			}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runCatLinks()
 		},
 	}
 
@@ -36,10 +36,20 @@ This only includes links to local files, and does not include any HTTP, FTP or a
 }
 
 func runCatLinks() error {
-	absTreeRoot, err := getCorrectPathToTreeRoot(treeRoot, resolveRepoRoot)
+	// TODO avoid globals treeRoot and resolveRepoRoot
+	absTreeRoot, err := filepath.Abs(treeRoot)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not convert %s to an absolute path: %w", treeRoot, err)
 	}
+
+	if resolveRepoRoot {
+		repoRoot, err := getRepositoryRoot(absTreeRoot)
+		if err != nil {
+			return fmt.Errorf("Failed to find git repo root from path %s: %w", absTreeRoot, err)
+		}
+		absTreeRoot = repoRoot
+	}
+
 	var outputWriter io.Writer
 	if outputPath == "" {
 		outputWriter = io.Writer(os.Stdout)
@@ -57,7 +67,8 @@ func runCatLinks() error {
 }
 
 func catLinks(treeRoot string, respectGitIgnore bool, output io.Writer) error {
-	logger.Debugf("Considering basenames %v and extensions %v", baseNames, extensions)
+	slog.Debug("building links using configured basenames and extensions",
+		"basenames", baseNames, "extensions", extensions)
 	nodes, err := checkdoc.BuildLinkGraphNodes(treeRoot, baseNames, extensions, respectGitIgnore)
 	if err != nil {
 		return err
@@ -67,10 +78,11 @@ func catLinks(treeRoot string, respectGitIgnore bool, output io.Writer) error {
 	filteredPaths := filterLinks(localPathsWithSlash)
 
 	for path := range filteredPaths {
-		fmt.Fprintln(output, path)
+		_, printerr := fmt.Fprintln(output, path)
+		err = errors.Join(err, printerr)
 	}
 
-	return nil
+	return err
 }
 
 // We're interested in:

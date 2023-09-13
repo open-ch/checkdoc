@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/slog"
 
 	"github.com/open-ch/checkdoc/checkdoc"
 )
@@ -25,12 +25,8 @@ Currently, verify will check for two things:
  - orphan README.md files: these are files that are not linked to
    from the repo's root directory, either directly or indirectly.
  - broken links.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			err := runVerify(respectGitIgnore)
-			if err != nil {
-				logger.Errorf("Verify failed: %s", err)
-				os.Exit(1)
-			}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runVerify(respectGitIgnore)
 		},
 	}
 
@@ -38,61 +34,48 @@ Currently, verify will check for two things:
 }
 
 func runVerify(respectGitIgnore bool) error {
-	absTreeRoot, err := getCorrectPathToTreeRoot(treeRoot, resolveRepoRoot)
+	// TODO avoid globals treeRoot and resolveRepoRoot
+	absTreeRoot, err := filepath.Abs(treeRoot)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not convert %s to an absolute path: %w", treeRoot, err)
 	}
-	logger.Infof("Running verify on tree root %s", absTreeRoot)
+
+	if resolveRepoRoot {
+		repoRoot, err := getRepositoryRoot(absTreeRoot)
+		if err != nil {
+			return fmt.Errorf("Failed to find git repo root from path %s: %w", absTreeRoot, err)
+		}
+		absTreeRoot = repoRoot
+	}
+
+	slog.Info("Running verify on tree root", "rootpath", absTreeRoot)
 	return verifyTree(absTreeRoot, respectGitIgnore)
 }
 
 func verifyTree(treeRoot string, respectGitIgnore bool) error {
-	logger.Infof("Considering basenames %v and extensions %v", baseNames, extensions)
+	slog.Debug("building links using configured basenames and extensions",
+		"basenames", baseNames, "extensions", extensions)
 	nodes, err := checkdoc.BuildLinkGraphNodes(treeRoot, baseNames, extensions, respectGitIgnore)
 
 	if err != nil {
-		logger.Errorf("Could not build the link graph for tree root %s: %s", treeRoot, err)
-		return err
+		return fmt.Errorf("Could not build the link graph for tree root %s: %w", treeRoot, err)
 	}
 
 	logNodes(nodes)
 
 	reports := checkdoc.BuildReport(treeRoot, nodes, implicitIndexes)
-	if !checkdoc.ValidateReports(reports, logger) {
-		logger.Errorf("Verify failed on tree root %s", treeRoot)
+	if !checkdoc.ValidateReports(reports) {
 		return fmt.Errorf("verify failed on tree root %s", treeRoot)
 	}
-	logger.Infof("Validated doc tree root %s", treeRoot)
+	slog.Info("Validated doc tree root successfully")
 	return nil
 }
 
 func logNodes(nodes []checkdoc.LinkGraphNode) {
-	logger.Debugf("Found %d nodes at:", len(nodes))
+	slog.Debug("Found nodes", "nodescount", len(nodes))
 	for _, node := range nodes {
-		logger.Debugf("\t%s:", node.RelativePath)
+		slog.Debug(fmt.Sprintf("\t%s:", node.RelativePath))
 	}
-}
-
-// getCorrectPathToTreeRoot is in charge of returning an absolute path to the 'correct' tree root, depending on the
-// specified 'resolveRepoRoot' flag:
-//   - if 'resolveRepoRoot' is true, the hierarchy above the passedRootPath will be explored
-//     for a git repository root, and that path will be used as the root
-//     from which to check documentation consistency.
-//   - otherwise, the passed path will be returned after having made sure it is absolute,
-//     calling Abs() if required.
-func getCorrectPathToTreeRoot(passedRootPath string, resolveRepoRoot bool) (string, error) {
-	absPath, err := filepath.Abs(passedRootPath)
-	if err != nil {
-		return "", fmt.Errorf("Could not convert %s to an absolute path: %w", passedRootPath, err)
-	}
-	if resolveRepoRoot {
-		repoRoot, err := getRepositoryRoot(absPath)
-		if err != nil {
-			return "", fmt.Errorf("Failed to find git repo root from path %s: %w", passedRootPath, err)
-		}
-		return repoRoot, nil
-	}
-	return absPath, nil
 }
 
 func getRepositoryRoot(path string) (string, error) {

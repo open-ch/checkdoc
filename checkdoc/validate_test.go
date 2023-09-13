@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,10 +13,8 @@ func TestValidateSimple(t *testing.T) {
 	nodes, err := BuildLinkGraphNodes(treeRoot, []string{}, extensions, false)
 	assert.NoError(t, err)
 
-	logger := log.New()
-
 	reports := BuildReport(treeRoot, nodes, []string{})
-	assert.True(t, ValidateReports(reports, logger), "The specified directory is expected to be valid.")
+	assert.True(t, ValidateReports(reports), "The specified directory is expected to be valid.")
 }
 
 func TestBuildLinkGraphNodesWithGitIgnore(t *testing.T) {
@@ -36,10 +33,8 @@ func TestValidateFail(t *testing.T) {
 	nodes, err := BuildLinkGraphNodes(treeRoot, baseNames, extensions, false)
 	assert.NoError(t, err)
 
-	logger := log.New()
-
 	reports := BuildReport(treeRoot, nodes, implicitIndexes)
-	assert.False(t, ValidateReports(reports, logger), "The complete test setup is expected to fail validation")
+	assert.False(t, ValidateReports(reports), "The complete test setup is expected to fail validation")
 }
 
 func TestBuildReport(t *testing.T) {

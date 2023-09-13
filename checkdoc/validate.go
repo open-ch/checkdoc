@@ -1,9 +1,12 @@
 package checkdoc
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/exp/slog"
 )
 
 // NodeReport contains some information about the quality of a node
@@ -14,7 +17,7 @@ type NodeReport struct {
 }
 
 // TODO the whole package needs a little rewrite to use some form of object that contains the config
-//  and state (logger, parameters, etc) and on which the methods are called.
+//  and state (parameters, etc) and on which the methods are called.
 
 // TODO if we ever want to do more fancy things, this part of the lib deserves to be rewritten to use
 // a graph library, something like gonum/graph.
@@ -24,11 +27,11 @@ type NodeReport struct {
 //   - internal links point to existing things (either files, directories or other readmes)
 //
 // This method returns 'true' if no issues where found, and false otherwise
-func ValidateReports(reports map[string]NodeReport, log Logger) bool {
+func ValidateReports(reports map[string]NodeReport) bool {
 	// TODO consider adding rules allowing for things like CHANGELOG files not to be linked to
 	// TODO add a flag to tolerate or refuse things like README (ie, force the extension)
 	var isValid = true
-	log.Infof("Checking for orphaned documents...")
+	slog.Info("Checking for orphaned documents...")
 	var orphans []string
 	for path, report := range reports {
 		// TODO specify the root file via an option
@@ -37,9 +40,9 @@ func ValidateReports(reports map[string]NodeReport, log Logger) bool {
 			isValid = false
 		}
 	}
-	logOrphans(orphans, log)
+	logOrphans(orphans)
 
-	log.Infof("Checking for dead links...")
+	slog.Info("Checking for dead links...")
 	var withDeadLinks []NodeReport
 	for _, report := range reports {
 		if len(report.DeadLinks) != 0 {
@@ -48,32 +51,32 @@ func ValidateReports(reports map[string]NodeReport, log Logger) bool {
 		}
 	}
 
-	logDeadLinks(withDeadLinks, log)
+	logDeadLinks(withDeadLinks)
 
 	return isValid
 }
 
-func logOrphans(orphans []string, log Logger) {
+func logOrphans(orphans []string) {
 	if len(orphans) == 0 {
-		log.Infof("No orphans found.")
+		slog.Info("No orphans found.")
 		return
 	}
-	log.Errorf("Located some orphan documents:")
+	slog.Error("Located some orphan documents:")
 	for _, orphan := range orphans {
-		log.Errorf("\t%s", orphan)
+		slog.Error(fmt.Sprintf("\t%s", orphan))
 	}
 }
 
-func logDeadLinks(withDeadLinks []NodeReport, log Logger) {
+func logDeadLinks(withDeadLinks []NodeReport) {
 	if len(withDeadLinks) == 0 {
-		log.Infof("No dead links found.")
+		slog.Info("No dead links found.")
 		return
 	}
-	log.Errorf("Located some files with dead links:")
+	slog.Error("Located some files with dead links:")
 	for _, invalid := range withDeadLinks {
-		log.Errorf("\t%s", invalid.Node.RelativePath)
+		slog.Error(fmt.Sprintf("\t%s", invalid.Node.RelativePath))
 		for _, deadLink := range invalid.DeadLinks {
-			log.Errorf("\t\t%s", deadLink)
+			slog.Error(fmt.Sprintf("\t\t%s", deadLink))
 		}
 	}
 }
