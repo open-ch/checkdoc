@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/slog"
 
 	"github.com/open-ch/checkdoc/checkdoc"
 )

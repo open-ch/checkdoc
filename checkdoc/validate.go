@@ -2,11 +2,10 @@ package checkdoc
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"golang.org/x/exp/slog"
 )
 
 // NodeReport contains some information about the quality of a node

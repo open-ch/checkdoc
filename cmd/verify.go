@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"log/slog"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/slog"
 
 	"github.com/open-ch/checkdoc/checkdoc"
 )

@@ -1,11 +1,10 @@
 package cmd
 
 import (
+	"log/slog"
 	"os"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/slog"
 )
 
 var (
@@ -31,9 +30,6 @@ var (
 				})
 				slogger := slog.New(logHandler)
 				slog.SetDefault(slogger)
-				logger.SetLevel(log.DebugLevel)
-			} else {
-				logger.SetLevel(log.InfoLevel)
 			}
 		},
 	}
@@ -42,9 +38,6 @@ var (
 	baseNames       []string // Currently we only search markdown files based on the extension
 	extensions      = []string{".md"}
 	implicitIndexes = []string{"README.md"} // When links point to a directory, we check for a readme within it
-
-	// Logger...
-	logger = log.New()
 )
 
 func init() {
@@ -60,11 +53,6 @@ func init() {
 		`If true, will check all potential documents against the repository's gitignore files.'`)
 
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Detailed output if true")
-
-	logger.SetFormatter(&log.TextFormatter{
-		DisableTimestamp: true,
-		ForceColors:      true,
-	})
 }
 
 // Execute runs the whole enchilada, baby!
