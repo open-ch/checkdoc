@@ -17,8 +17,13 @@ var (
 	verbose bool
 
 	rootCmd = &cobra.Command{
-		Use:   "checkdoc",
-		Short: "checkdoc is a markdown documentation validator",
+		// Don't show usage when reporting errors.
+		// Only show with -h, --help or when subcommands are missing.
+		SilenceUsage: true,
+		// Don't show errors twice, we handle error in Execute()
+		SilenceErrors: true,
+		Use:           "checkdoc",
+		Short:         "checkdoc is a markdown documentation validator",
 		Long: "A markdown documentation validator intended to enforce a healthy documentation " +
 			"in settings such as a fat repo.",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
@@ -58,7 +63,7 @@ func init() {
 // Execute runs the whole enchilada, baby!
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		slog.Error("checkdoc failed", err)
+		slog.Error("checkdoc failed", "err", err)
 		os.Exit(1)
 	}
 }
