@@ -15,37 +15,36 @@ import (
 	"github.com/open-ch/checkdoc/checkdoc"
 )
 
-var outputPath string
+func getCatLinksCommand() *cobra.Command {
+	var outputPath string
 
-func init() {
-	// verifyCmd represents the verify command
-	var catLinksCmd = &cobra.Command{
+	catLinksCmd := &cobra.Command{
 		Use:   "catlinks",
 		Short: "Searches and dumps internal links found in the documentation files",
 		Long: `Searches and dumps internal links found int documentation files:
 This only includes links to local files, and does not include any HTTP, FTP or any other such link.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runCatLinks()
+		RunE: func(_ *cobra.Command, _ []string) error {
+			return runCatLinks(outputPath)
 		},
 	}
 
 	catLinksCmd.Flags().StringVarP(&outputPath, "output", "o", "",
 		"File to write the output to. Will output to STDOUT if not set.")
 
-	rootCmd.AddCommand(catLinksCmd)
+	return catLinksCmd
 }
 
-func runCatLinks() error {
+func runCatLinks(outputPath string) error {
 	// TODO avoid globals treeRoot and resolveRepoRoot
 	absTreeRoot, err := filepath.Abs(treeRoot)
 	if err != nil {
-		return fmt.Errorf("Could not convert %s to an absolute path: %w", treeRoot, err)
+		return fmt.Errorf("could not convert %s to an absolute path: %w", treeRoot, err)
 	}
 
 	if resolveRepoRoot {
 		repoRoot, err := getRepositoryRoot(absTreeRoot)
 		if err != nil {
-			return fmt.Errorf("Failed to find git repo root from path %s: %w", absTreeRoot, err)
+			return fmt.Errorf("failed to find git repo root from path %s: %w", absTreeRoot, err)
 		}
 		absTreeRoot = repoRoot
 	}
@@ -67,8 +66,10 @@ func runCatLinks() error {
 }
 
 func catLinks(treeRoot string, respectGitIgnore bool, output io.Writer) error {
-	slog.Debug("building links using configured basenames and extensions",
-		"basenames", baseNames, "extensions", extensions)
+	extensions := []string{".md"}
+	baseNames := []string{}
+	slog.Debug("building links",
+		"extensions", extensions, "baseNames", baseNames)
 	nodes, err := checkdoc.BuildLinkGraphNodes(treeRoot, baseNames, extensions, respectGitIgnore)
 	if err != nil {
 		return err
@@ -94,7 +95,6 @@ func catLinks(treeRoot string, respectGitIgnore bool, output io.Writer) error {
 // This means:
 //   - filter out anything that ends in .md, README or CHANGELOG
 //   - filter out anything that points to a directory (implicitly that's a README)
-//     -
 func filterLinks(paths map[string]bool) map[string]bool {
 	filtered := make(map[string]bool)
 	for path := range paths {

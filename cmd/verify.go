@@ -12,11 +12,8 @@ import (
 	"github.com/open-ch/checkdoc/checkdoc"
 )
 
-// A file or dir name telling us we are at the root of a git repo
-const gitRootIndicator = ".git"
-
-func init() {
-	var verifyCmd = &cobra.Command{
+func getVerifyCommand() *cobra.Command {
+	verifyCmd := cobra.Command{
 		Use:   "verify",
 		Short: "Runs sanity checks on the documentation",
 		Long: `Run some checks against the markdown documentation found in a directory hierarchy.
@@ -25,25 +22,25 @@ Currently, verify will check for two things:
  - orphan README.md files: these are files that are not linked to
    from the repo's root directory, either directly or indirectly.
  - broken links.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return runVerify(respectGitIgnore)
 		},
 	}
 
-	rootCmd.AddCommand(verifyCmd)
+	return &verifyCmd
 }
 
 func runVerify(respectGitIgnore bool) error {
 	// TODO avoid globals treeRoot and resolveRepoRoot
 	absTreeRoot, err := filepath.Abs(treeRoot)
 	if err != nil {
-		return fmt.Errorf("Could not convert %s to an absolute path: %w", treeRoot, err)
+		return fmt.Errorf("could not convert %s to an absolute path: %w", treeRoot, err)
 	}
 
 	if resolveRepoRoot {
 		repoRoot, err := getRepositoryRoot(absTreeRoot)
 		if err != nil {
-			return fmt.Errorf("Failed to find git repo root from path %s: %w", absTreeRoot, err)
+			return fmt.Errorf("failed to find git repo root from path %s: %w", absTreeRoot, err)
 		}
 		absTreeRoot = repoRoot
 	}
@@ -53,17 +50,19 @@ func runVerify(respectGitIgnore bool) error {
 }
 
 func verifyTree(treeRoot string, respectGitIgnore bool) error {
-	slog.Debug("building links using configured basenames and extensions",
-		"basenames", baseNames, "extensions", extensions)
+	extensions := []string{".md"}
+	baseNames := []string{}
+	slog.Debug("building links",
+		"extensions", extensions, "baseNames", baseNames)
 	nodes, err := checkdoc.BuildLinkGraphNodes(treeRoot, baseNames, extensions, respectGitIgnore)
 
 	if err != nil {
-		return fmt.Errorf("Could not build the link graph for tree root %s: %w", treeRoot, err)
+		return fmt.Errorf("could not build the link graph for tree root %s: %w", treeRoot, err)
 	}
 
 	logNodes(nodes)
 
-	reports := checkdoc.BuildReport(treeRoot, nodes, implicitIndexes)
+	reports := checkdoc.BuildReport(treeRoot, nodes, []string{"README.md"})
 	if !checkdoc.ValidateReports(reports) {
 		return fmt.Errorf("verify failed on tree root %s", treeRoot)
 	}
