@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"log/slog"
 	"os"
+
+	"osag/libs/go/observability/logging"
 
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
@@ -28,13 +29,14 @@ func GetRootCommand() *cobra.Command {
 		Short:         "checkdoc is a markdown documentation validator",
 		Long: "A markdown documentation validator intended to enforce a healthy documentation " +
 			"in settings such as a fat repo.",
-		PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
 			handler := log.New(os.Stderr)
 			if verbose {
 				handler.SetLevel(log.DebugLevel)
 			}
-			logger := slog.New(handler)
-			slog.SetDefault(logger)
+
+			// initialize the observability logging library with the charmbracelet pretty logger
+			return logging.Init("info", "plain", logging.WithHandler(handler))
 		},
 	}
 

@@ -2,8 +2,10 @@ package checkdoc
 
 import (
 	"fmt"
-	"log/slog"
 	"os"
+
+	"osag/libs/go/observability/logging"
+
 	"path/filepath"
 	"strings"
 )
@@ -30,7 +32,7 @@ func ValidateReports(reports map[string]NodeReport) bool {
 	// TODO consider adding rules allowing for things like CHANGELOG files not to be linked to
 	// TODO add a flag to tolerate or refuse things like README (ie, force the extension)
 	var isValid = true
-	slog.Info("Checking for orphaned documents...")
+	logging.Info("Checking for orphaned documents...")
 	var orphans []string
 	for path, report := range reports {
 		// TODO specify the root file via an option
@@ -41,7 +43,7 @@ func ValidateReports(reports map[string]NodeReport) bool {
 	}
 	logOrphans(orphans)
 
-	slog.Info("Checking for dead links...")
+	logging.Info("Checking for dead links...")
 	var withDeadLinks []NodeReport
 	for _, report := range reports {
 		if len(report.DeadLinks) != 0 {
@@ -57,25 +59,25 @@ func ValidateReports(reports map[string]NodeReport) bool {
 
 func logOrphans(orphans []string) {
 	if len(orphans) == 0 {
-		slog.Info("No orphans found.")
+		logging.Info("No orphans found.")
 		return
 	}
-	slog.Error("Located some orphan documents:")
+	logging.Error("Located some orphan documents:")
 	for _, orphan := range orphans {
-		slog.Error(fmt.Sprintf("\t%s", orphan))
+		logging.Error(fmt.Sprintf("\t%s", orphan))
 	}
 }
 
 func logDeadLinks(withDeadLinks []NodeReport) {
 	if len(withDeadLinks) == 0 {
-		slog.Info("No dead links found.")
+		logging.Info("No dead links found.")
 		return
 	}
-	slog.Error("Located some files with dead links:")
+	logging.Error("Located some files with dead links:")
 	for _, invalid := range withDeadLinks {
-		slog.Error(fmt.Sprintf("\t%s", invalid.Node.RelativePath))
+		logging.Error(fmt.Sprintf("\t%s", invalid.Node.RelativePath))
 		for _, deadLink := range invalid.DeadLinks {
-			slog.Error(fmt.Sprintf("\t\t%s", deadLink))
+			logging.Error(fmt.Sprintf("\t\t%s", deadLink))
 		}
 	}
 }

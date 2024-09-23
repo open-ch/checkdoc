@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/spf13/cobra"
-
+	"osag/libs/go/observability/logging"
 	"github.com/open-ch/checkdoc/checkdoc"
+
+	"github.com/spf13/cobra"
 )
 
 func getCatLinksCommand() *cobra.Command {
@@ -68,7 +68,7 @@ func runCatLinks(outputPath string) error {
 func catLinks(treeRoot string, respectGitIgnore bool, output io.Writer) error {
 	extensions := []string{".md"}
 	baseNames := []string{}
-	slog.Debug("building links",
+	logging.Debugw("building links",
 		"extensions", extensions, "baseNames", baseNames)
 	nodes, err := checkdoc.BuildLinkGraphNodes(treeRoot, baseNames, extensions, respectGitIgnore)
 	if err != nil {

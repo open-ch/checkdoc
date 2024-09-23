@@ -2,14 +2,14 @@ package cmd
 
 import (
 	"fmt"
-	"log/slog"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
-	"github.com/spf13/cobra"
-
+	"osag/libs/go/observability/logging"
 	"github.com/open-ch/checkdoc/checkdoc"
+
+	"github.com/spf13/cobra"
 )
 
 func getVerifyCommand() *cobra.Command {
@@ -45,14 +45,14 @@ func runVerify(respectGitIgnore bool) error {
 		absTreeRoot = repoRoot
 	}
 
-	slog.Info("Running verify on tree root", "rootpath", absTreeRoot)
+	logging.Infow("Running verify on tree root", "rootpath", absTreeRoot)
 	return verifyTree(absTreeRoot, respectGitIgnore)
 }
 
 func verifyTree(treeRoot string, respectGitIgnore bool) error {
 	extensions := []string{".md"}
 	baseNames := []string{}
-	slog.Debug("building links",
+	logging.Debugw("building links",
 		"extensions", extensions, "baseNames", baseNames)
 	nodes, err := checkdoc.BuildLinkGraphNodes(treeRoot, baseNames, extensions, respectGitIgnore)
 
@@ -66,14 +66,14 @@ func verifyTree(treeRoot string, respectGitIgnore bool) error {
 	if !checkdoc.ValidateReports(reports) {
 		return fmt.Errorf("verify failed on tree root %s", treeRoot)
 	}
-	slog.Info("Validated doc tree root successfully")
+	logging.Info("Validated doc tree root successfully")
 	return nil
 }
 
 func logNodes(nodes []checkdoc.LinkGraphNode) {
-	slog.Debug("Found nodes", "nodescount", len(nodes))
+	logging.Debugw("Found nodes", "nodescount", len(nodes))
 	for _, node := range nodes {
-		slog.Debug(fmt.Sprintf("\t%s:", node.RelativePath))
+		logging.Debug(fmt.Sprintf("\t%s:", node.RelativePath))
 	}
 }
 
