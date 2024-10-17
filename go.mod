@@ -1,6 +1,6 @@
 module github.com/open-ch/checkdoc
 
-go 1.22
+go 1.23
 
 replace osag/libs/go/observability => ../../libs/go/observability/
 
