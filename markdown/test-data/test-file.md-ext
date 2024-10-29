@@ -58,3 +58,18 @@ or in a quote
 {anchor #anchor-id}
 
 scroll on to [this anchor](#anchor-id)
+
+This is not a link:
+
+```go
+func NewCronSensor[T any](
+        ctx context.Context,
+        helper stepif.Helper,
+        interval time.Duration,
+        workload func() (out *T, done bool),
+        cap time.Duration,
+        atCap func() error,
+
+        differentiator string,
+) (*T, error)
+```

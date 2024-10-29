@@ -1,7 +1,7 @@
 package markdown
 
 import (
-	"io/ioutil"
+	"os"
 	"regexp"
 
 	blackfriday "github.com/russross/blackfriday/v2"
@@ -16,11 +16,14 @@ var sameFileAnchorMatcher = regexp.MustCompile(`^#`)
 // ParseFileToAst parses a file living at the path specified at marcdownFile
 // and returns an abstract syntax tree
 func ParseFileToAst(markdownFile string) (*blackfriday.Node, error) {
-	input, err := ioutil.ReadFile(markdownFile)
+	input, err := os.ReadFile(markdownFile)
 	if err != nil {
 		return nil, err
 	}
-	parser := blackfriday.New(blackfriday.WithExtensions(blackfriday.Autolink))
+	parser := blackfriday.New(
+		blackfriday.WithExtensions(blackfriday.Autolink),
+		blackfriday.WithExtensions(blackfriday.FencedCode),
+	)
 
 	return parser.Parse(input), nil
 }
@@ -47,7 +50,7 @@ func ExtractAllLinks(ast *blackfriday.Node) []blackfriday.LinkData {
 // Note on anchors: links pointing to anchors in the same file will not be returned. Links pointing to other files
 // while also containing an anchor (ie, in the form <path_to_file>#<anchor-name> are returned.
 func FilterLocalLinks(links []blackfriday.LinkData) []blackfriday.LinkData {
-	var localLinks []blackfriday.LinkData
+	localLinks := make([]blackfriday.LinkData, 0, len(links))
 	for _, link := range links {
 		// We eliminate links starting with something like <prefix>://, ie http://, ftp://,
 		// or with a mailto:

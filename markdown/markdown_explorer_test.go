@@ -31,19 +31,17 @@ func TestExtractAllLinks(t *testing.T) {
 	ast := getTestAst("test-file.md-ext")
 	links := ExtractAllLinks(ast)
 
-	assert.Equal(t, 11, len(links), "Expected 10 links. Is the Autolink extension enabled?")
+	assert.Equal(t, 9, len(links), "Expected 9 links. Is the Autolink extension enabled?")
 
-	assert.Equal(t, "https://google.ch", string(links[0].Destination))
-	assert.Equal(t, "https://open.ch", string(links[1].Destination))
-	assert.Equal(t, "relative/internal", string(links[2].Destination))
-	assert.Equal(t, "/absolute/internal", string(links[3].Destination))
-	assert.Equal(t, "https://sqooba.io", string(links[4].Destination))
-	assert.Equal(t, "nested/relative", string(links[5].Destination))
-	assert.Equal(t, "/nested/absolute", string(links[6].Destination))
-	assert.Equal(t, "../sibling", string(links[7].Destination))
-	assert.Equal(t, "./sub-dir", string(links[8].Destination))
-	assert.Equal(t, "mailto:julien@sqooba.io", string(links[9].Destination))
-	assert.Equal(t, "#anchor-id", string(links[10].Destination))
+	assert.Equal(t, "https://open.ch", string(links[0].Destination))
+	assert.Equal(t, "relative/internal", string(links[1].Destination))
+	assert.Equal(t, "/absolute/internal", string(links[2].Destination))
+	assert.Equal(t, "nested/relative", string(links[3].Destination))
+	assert.Equal(t, "/nested/absolute", string(links[4].Destination))
+	assert.Equal(t, "../sibling", string(links[5].Destination))
+	assert.Equal(t, "./sub-dir", string(links[6].Destination))
+	assert.Equal(t, "mailto:julien@sqooba.io", string(links[7].Destination))
+	assert.Equal(t, "#anchor-id", string(links[8].Destination))
 }
 
 func TestFilterLocalLinks(t *testing.T) {
