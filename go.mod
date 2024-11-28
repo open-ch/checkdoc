@@ -2,7 +2,9 @@ module github.com/open-ch/checkdoc
 
 go 1.23
 
-replace osag/libs/go/observability => ../../libs/go/observability/
+replace osag/libs/go/observability => ../../libs/go/observability
+
+replace osag/libs/go/semos => ../../libs/go/semos
 
 require (
 	github.com/charmbracelet/log v0.4.0
@@ -65,4 +67,5 @@ require (
 	google.golang.org/protobuf v1.35.2 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	osag/libs/go/semos v0.0.0-00010101000000-000000000000 // indirect
 )
