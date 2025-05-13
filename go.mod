@@ -7,7 +7,7 @@ replace osag/libs/go/observability => ../../libs/go/observability
 replace osag/libs/go/semos => ../../libs/go/semos
 
 require (
-	github.com/charmbracelet/log v0.4.1
+	github.com/charmbracelet/log v0.4.2
 	github.com/denormal/go-gitignore v0.0.0-20180930084346-ae8ad1d07817
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cobra v1.9.1
