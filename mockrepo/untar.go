@@ -1,4 +1,3 @@
-//revive:disable
 // Copyright (c) 2009 The Go Authors. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,7 +26,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Package untar untars a tarball to disk.
+// Package mockrepo untars a tarball to disk.
 // Mostly used for unpacking test files
 package mockrepo
 
@@ -38,12 +37,12 @@ import (
 	"io"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
 )
 
+//nolint:all // untar is a test fixture, the code was taken from upstream we should test differently rather than improve this
 func untar(r io.Reader, dir string) (err error) {
 	t0 := time.Now()
 	nFiles := 0
@@ -58,7 +57,7 @@ func untar(r io.Reader, dir string) (err error) {
 	}()
 	zr, err := gzip.NewReader(r)
 	if err != nil {
-		return fmt.Errorf("requires gzip-compressed body: %v", err)
+		return fmt.Errorf("requires gzip-compressed body: %w", err)
 	}
 	tr := tar.NewReader(zr)
 	loggedChtimesError := false
@@ -69,7 +68,7 @@ func untar(r io.Reader, dir string) (err error) {
 		}
 		if err != nil {
 			log.Printf("tar reading error: %v", err)
-			return fmt.Errorf("tar error: %v", err)
+			return fmt.Errorf("tar error: %w", err)
 		}
 		if !validRelPath(f.Name) {
 			return fmt.Errorf("tar contained invalid name error %q", f.Name)
@@ -96,12 +95,13 @@ func untar(r io.Reader, dir string) (err error) {
 			if err != nil {
 				return err
 			}
+			//nolint:gsec // This is only used for test purposes with a specific tar file.
 			n, err := io.Copy(wf, tr)
 			if closeErr := wf.Close(); closeErr != nil && err == nil {
 				err = closeErr
 			}
 			if err != nil {
-				return fmt.Errorf("error writing to %s: %v", abs, err)
+				return fmt.Errorf("error writing to %s: %w", abs, err)
 			}
 			if n != f.Size {
 				return fmt.Errorf("only wrote %d bytes to %s; expected %d", n, abs, f.Size)
@@ -136,17 +136,6 @@ func untar(r io.Reader, dir string) (err error) {
 		}
 	}
 	return nil
-}
-
-func validRelativeDir(dir string) bool {
-	if strings.Contains(dir, `\`) || path.IsAbs(dir) {
-		return false
-	}
-	dir = path.Clean(dir)
-	if strings.HasPrefix(dir, "../") || strings.HasSuffix(dir, "/..") || dir == ".." {
-		return false
-	}
-	return true
 }
 
 func validRelPath(p string) bool {
