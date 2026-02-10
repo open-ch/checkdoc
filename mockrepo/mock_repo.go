@@ -18,6 +18,7 @@ func MockRepo(t *testing.T) string {
 	// This method will be called from places that have imported this package as a dependency:
 	// in Bazel, it means that its content will be present in a directory with the same name.
 	// This is ugly as hell and will probably break outside of Bazel
+	// nosemgrep: go-use-root-open-osag
 	f, err := os.Open("../mockrepo/test-data.tar.gz")
 	if err != nil {
 		t.Error(err)
