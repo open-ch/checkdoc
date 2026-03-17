@@ -12,7 +12,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
-	osag/libs/go/observability v0.0.0-00010101000000-000000000000
+	osag/libs/go/observability/logging v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -75,7 +75,25 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	osag/libs/go/errorx v0.0.0-00010101000000-000000000000 // indirect
+	osag/libs/go/observability v0.0.0-00010101000000-000000000000 // indirect
+	osag/libs/go/observability/tracing v0.0.0-00010101000000-000000000000 // indirect
 	osag/libs/go/semos v0.0.0-00010101000000-000000000000 // indirect
 )
 
 replace osag/libs/go/errorx => ./../../libs/go/errorx
+
+replace osag/libs/go/observability/logging => ../../libs/go/observability/logging
+
+replace osag/libs/go/observability/tracing => ../../libs/go/observability/tracing
+
+replace osag/libs/go/observability/metering => ../../libs/go/observability/metering
+
+replace osag/libs/go/observability/profiling => ../../libs/go/observability/profiling
+
+replace osag/libs/go/observability/spanlogging => ../../libs/go/observability/spanlogging
+
+replace osag/libs/go/observability/obs => ../../libs/go/observability/obs
+
+replace osag/libs/go/observability/middlewares => ../../libs/go/observability/middlewares
+
+replace osag/libs/go/observability/examples => ../../libs/go/observability/examples
