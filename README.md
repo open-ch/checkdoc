@@ -30,6 +30,34 @@ ERRO Verify failed on tree root /tmp/checkdoc
 
 As shown above, it detects that we have a dead link to a non-existing file.
 
+## Excluding Paths
+
+Some markdown in a repository is content rather than documentation: pages served
+by an application, generated exports, imported fixtures. Nothing links to it from
+a README, and it may link among its own pages, so both checks would report it
+even though the tree is healthy.
+
+List those paths in a `.checkdocignore` file at the root of the tree being
+checked:
+
+```
+# One path per line, relative to this file. A directory excludes everything
+# below it. Lines starting with '#' are comments.
+applications/customer-portal/apps/backends/markdown-proxy/content/
+docs/generated-api-reference.md
+```
+
+Entries are plain paths, not glob patterns, and must stay inside the tree. The
+file lives in the repository rather than in flags so that a local run and the CI
+run apply the same exclusions; checkdoc logs the paths it loaded on every run.
+
+Exclusion only affects discovery. An excluded file is neither required to be
+linked to nor checked for dead links, but it is still on disk, so links pointing
+into an excluded tree from documents that *are* checked keep resolving.
+
+Files matched by a `.gitignore` are skipped as well, unless
+`--respect-git-ignore=false` is passed.
+
 ## Installation
 
 ```

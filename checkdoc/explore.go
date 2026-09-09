@@ -3,6 +3,7 @@ package checkdoc
 //revive:disable:flag-parameter
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 	"github.com/denormal/go-gitignore"
 	blackfriday "github.com/russross/blackfriday/v2"
 
+	"osag/libs/go/observability/logging"
 	"github.com/open-ch/checkdoc/markdown"
 )
 
@@ -54,7 +56,7 @@ func BuildLinkGraphNodes(
 ) ([]LinkGraphNode, error) {
 	// Input validation
 	if len(baseNames) == 0 && len(fileExtensions) == 0 {
-		return nil, fmt.Errorf("need to specify at least one base name or extension")
+		return nil, errors.New("need to specify at least one base name or extension")
 	}
 
 	if !filepath.IsAbs(treeRoot) {
@@ -87,6 +89,20 @@ func BuildLinkGraphNodes(
 		filteredResults = results
 	}
 
+	// Drop what the repository excludes on top of the gitignore, so that content
+	// trees can be checked in without being treated as documentation.
+	exclusions, err := readExclusions(treeRoot)
+	if err != nil {
+		return nil, err
+	}
+	if len(exclusions) > 0 {
+		logging.Infow("Excluding paths", "file", IgnoreFile, "paths", exclusions)
+		filteredResults, err = dropExcluded(treeRoot, filteredResults, exclusions)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return parseFilesAndBuildGraph(filteredResults, treeRoot)
 }
 
@@ -114,7 +130,7 @@ func parseFilesAndBuildGraph(absFilePaths []string, treeRoot string) ([]LinkGrap
 			)
 
 		if err != nil {
-			return nil, fmt.Errorf("failed to normalize relative links in %s from root %s:%s", normalizedRelLinks, treeRoot, err)
+			return nil, fmt.Errorf("failed to normalize relative links in %s from root %s: %w", normalizedRelLinks, treeRoot, err)
 		}
 
 		graphNodes = append(graphNodes,
@@ -129,7 +145,7 @@ func parseFilesAndBuildGraph(absFilePaths []string, treeRoot string) ([]LinkGrap
 }
 
 func keepLinksAsStrings(linkDatas []blackfriday.LinkData, trimAnchors bool) []string {
-	var toRet []string
+	toRet := make([]string, 0, len(linkDatas))
 	for _, linkData := range linkDatas {
 		// TODO validate existence of Anchor at destination?
 		var linkStr = string(linkData.Destination)
@@ -145,7 +161,7 @@ func keepLinksAsStrings(linkDatas []blackfriday.LinkData, trimAnchors bool) []st
 
 // normalizeRelativeAstTo normalizes the passed relative links according to the treeRoot, based on the filePath
 // where they were found.
-func normalizeLinksToRoot(treeRoot string, filePath string, relativeLinks []string) ([]string, error) {
+func normalizeLinksToRoot(treeRoot, filePath string, relativeLinks []string) ([]string, error) {
 	absFilePath := filepath.Join(treeRoot, filePath)
 	// We are interested in building links relative to the directory containing the file.
 	absDirPath := filepath.Dir(absFilePath)
@@ -159,10 +175,10 @@ func normalizeLinksToRoot(treeRoot string, filePath string, relativeLinks []stri
 
 		absoluteNormalizedPath, err := filepath.Abs(projectAbsoluteLink)
 		if err != nil {
-			return nil, fmt.Errorf("failed to normalize relative links from root %s, file %s:%s", treeRoot, filePath, err)
+			return nil, fmt.Errorf("failed to normalize relative links from root %s, file %s: %w", treeRoot, filePath, err)
 		}
 		if !strings.HasPrefix(absoluteNormalizedPath, treeRoot) {
-			return nil, fmt.Errorf("relative link %s points outside of the tree root %s for file %s", string(relativeLink), treeRoot, filePath)
+			return nil, fmt.Errorf("relative link %s points outside of the tree root %s for file %s", relativeLink, treeRoot, filePath)
 		}
 		relativeNormalizedPath := strings.TrimPrefix(absoluteNormalizedPath, treeRoot)
 		normalizedRelativePaths = append(normalizedRelativePaths, relativeNormalizedPath)
@@ -170,7 +186,7 @@ func normalizeLinksToRoot(treeRoot string, filePath string, relativeLinks []stri
 	return normalizedRelativePaths, nil
 }
 
-func findMatchingFiles(treeRoot string, baseNames []string, fileExtensions []string) ([]string, error) {
+func findMatchingFiles(treeRoot string, baseNames, fileExtensions []string) ([]string, error) {
 	var collectedFiles []string
 
 	// This was refactored to avoid fs util but each call to searchByFileName
@@ -198,12 +214,12 @@ func findMatchingFiles(treeRoot string, baseNames []string, fileExtensions []str
 // searchByFileName Given a path, returns all sub-paths to files that are named exactly like fileName
 // rootPath must be absolute
 // Note: migrated from fsutils library.
-func searchByFileName(rootPath string, baseName string) ([]string, error) {
+func searchByFileName(rootPath, baseName string) ([]string, error) {
 	if !filepath.IsAbs(rootPath) {
 		return nil, fmt.Errorf("rootPath is not absolute: %s", rootPath)
 	}
-	if len(baseName) == 0 {
-		return nil, fmt.Errorf("baseName cannot be empty")
+	if baseName == "" {
+		return nil, errors.New("baseName cannot be empty")
 	}
 
 	return basenameGlob(rootPath, baseName)
@@ -212,12 +228,12 @@ func searchByFileName(rootPath string, baseName string) ([]string, error) {
 // SearchByExtension Given a path, returns all sub-paths to files that have the specified extension 'ext'.
 // Note that 'ext' must include a dot.
 // Note: migrated from fsutils library.
-func searchByExtension(rootPath string, ext string) ([]string, error) {
+func searchByExtension(rootPath, ext string) ([]string, error) {
 	if !filepath.IsAbs(rootPath) {
 		return nil, fmt.Errorf("rootPath is not absolute: %s", rootPath)
 	}
-	if len(ext) == 0 {
-		return nil, fmt.Errorf("extension cannot be empty")
+	if ext == "" {
+		return nil, errors.New("extension cannot be empty")
 	}
 	if !strings.HasPrefix(ext, ".") {
 		return nil, fmt.Errorf("extension must start with a dot (.): %s", ext)
@@ -228,9 +244,9 @@ func searchByExtension(rootPath string, ext string) ([]string, error) {
 
 // filepath.Glob does not support things like '**/file'
 // Note: migrated from fsutils library.
-func basenameGlob(dir string, baseName string) ([]string, error) {
+func basenameGlob(dir, baseName string) ([]string, error) {
 	var files []string
-	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+	err := filepath.Walk(dir, func(path string, _ os.FileInfo, _ error) error {
 		if filepath.Base(path) == baseName {
 			files = append(files, path)
 		}
@@ -241,9 +257,9 @@ func basenameGlob(dir string, baseName string) ([]string, error) {
 }
 
 // Note: migrated from fsutils library.
-func extensionGlob(dir string, ext string) ([]string, error) {
+func extensionGlob(dir, ext string) ([]string, error) {
 	var files []string
-	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+	err := filepath.Walk(dir, func(path string, _ os.FileInfo, _ error) error {
 		if filepath.Ext(path) == ext {
 			files = append(files, path)
 		}
@@ -263,7 +279,7 @@ func parseFiles(mdFilePaths []string) ([]*parsedAST, error) {
 		}
 		ast, err := markdown.ParseFileToAst(mdFilePath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse markdow file %s: %s", mdFilePath, err)
+			return nil, fmt.Errorf("failed to parse markdown file %s: %w", mdFilePath, err)
 		}
 		asts = append(asts, &parsedAST{mdFilePath, ast})
 	}
