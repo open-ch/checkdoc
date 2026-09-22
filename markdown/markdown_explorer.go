@@ -21,8 +21,7 @@ func ParseFileToAst(markdownFile string) (*blackfriday.Node, error) {
 		return nil, err
 	}
 	parser := blackfriday.New(
-		blackfriday.WithExtensions(blackfriday.Autolink),
-		blackfriday.WithExtensions(blackfriday.FencedCode),
+		blackfriday.WithExtensions(blackfriday.Autolink | blackfriday.FencedCode | blackfriday.Tables),
 	)
 
 	return parser.Parse(input), nil
