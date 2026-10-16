@@ -73,3 +73,9 @@ func NewCronSensor[T any](
         differentiator string,
 ) (*T, error)
 ```
+
+## Underscores in paths and text
+
+snake_case: [under-link](my_dir/README.md) and other_thing
+
+_emphasised [nested-under-link](a_b/c)_

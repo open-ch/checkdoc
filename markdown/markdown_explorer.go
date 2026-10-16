@@ -20,8 +20,13 @@ func ParseFileToAst(markdownFile string) (*blackfriday.Node, error) {
 	if err != nil {
 		return nil, err
 	}
+	// NoIntraEmphasis: without it, the '_' in a word like snake_case opens an emphasis span
+	// that swallows any following link whose destination contains '_' (e.g. my_dir/README.md),
+	// so the link is never extracted and its target is reported as orphan.
 	parser := blackfriday.New(
-		blackfriday.WithExtensions(blackfriday.Autolink | blackfriday.FencedCode | blackfriday.Tables),
+		blackfriday.WithExtensions(
+			blackfriday.Autolink | blackfriday.FencedCode | blackfriday.Tables | blackfriday.NoIntraEmphasis,
+		),
 	)
 
 	return parser.Parse(input), nil
